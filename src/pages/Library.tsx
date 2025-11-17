@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Music } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Play, Music, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface Song {
@@ -17,12 +18,29 @@ interface Song {
 
 export default function Library() {
   const [songs, setSongs] = useState<Song[]>([]);
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const { playSong, playQueue } = usePlayer();
 
   useEffect(() => {
     fetchSongs();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredSongs(songs);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = songs.filter(
+        (song) =>
+          song.title.toLowerCase().includes(query) ||
+          song.artist.toLowerCase().includes(query) ||
+          song.description?.toLowerCase().includes(query)
+      );
+      setFilteredSongs(filtered);
+    }
+  }, [searchQuery, songs]);
 
   const fetchSongs = async () => {
     try {
@@ -33,6 +51,7 @@ export default function Library() {
 
       if (error) throw error;
       setSongs(data || []);
+      setFilteredSongs(data || []);
     } catch (error: any) {
       toast.error("Nepodařilo se načíst skladby");
       console.error(error);
@@ -83,8 +102,26 @@ export default function Library() {
         Hudební knihovna
       </h1>
       
+      <div className="mb-6 relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Hledat podle názvu, interpreta..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 neon-glow"
+        />
+      </div>
+
+      {filteredSongs.length === 0 && searchQuery && (
+        <div className="text-center py-8">
+          <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+          <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-        {songs.map((song, index) => (
+        {filteredSongs.map((song, index) => (
           <Card
             key={song.id}
             className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow hover:scale-105"
