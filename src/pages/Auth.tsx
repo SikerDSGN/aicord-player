@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Music } from "lucide-react";
+import aicordLogo from "@/assets/aicord-logo.png";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -34,7 +34,7 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast.success("Account created! Please wait for admin approval.");
+      toast.success("Účet vytvořen! Čekejte na schválení adminem.");
       navigate("/pending");
     } catch (error: any) {
       toast.error(error.message);
@@ -55,7 +55,7 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast.success("Welcome back!");
+      toast.success("Vítejte zpět!");
       navigate("/");
     } catch (error: any) {
       toast.error(error.message);
@@ -68,19 +68,19 @@ export default function Auth() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-dark p-4">
       <Card className="w-full max-w-md border-border bg-card shadow-card">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-primary">
-            <Music className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-3xl font-bold">J-Bublák Player</CardTitle>
+          <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 md:h-20 mb-4" />
+          <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Aicord PLAYER
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Private music streaming platform
+            Soukromá streamovací platforma
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Přihlášení</TabsTrigger>
+              <TabsTrigger value="signup">Registrace</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -90,14 +90,14 @@ export default function Auth() {
                   <Input
                     id="signin-email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="vas@email.cz"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password">Heslo</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -106,8 +106,8 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign In"}
+                <Button type="submit" className="w-full shadow-glow" disabled={loading}>
+                  {loading ? "Přihlašování..." : "Přihlásit se"}
                 </Button>
               </form>
             </TabsContent>
@@ -115,11 +115,11 @@ export default function Auth() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Label htmlFor="signup-name">Celé jméno</Label>
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder="Jan Novák"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -130,14 +130,14 @@ export default function Auth() {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="vas@email.cz"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">Heslo</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -147,8 +147,8 @@ export default function Auth() {
                     minLength={6}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating account..." : "Sign Up"}
+                <Button type="submit" className="w-full shadow-glow" disabled={loading}>
+                  {loading ? "Vytváření účtu..." : "Vytvořit účet"}
                 </Button>
               </form>
             </TabsContent>
