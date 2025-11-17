@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Music, Library, ListMusic, Users, Upload, LogOut } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
+import aicordLogo from "@/assets/aicord-logo.png";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { signOut, userRole } = useAuth();
@@ -14,11 +15,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-gradient-dark">
       <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary">
-              <Music className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">J-Bublák Player</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={aicordLogo} alt="Aicord Logo" className="h-12 w-auto" />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Aicord PLAYER
+            </span>
           </Link>
 
           <nav className="flex items-center gap-2">
