@@ -8,45 +8,44 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Dark underground rap theme */
-    --background: 220 15% 8%;
-    --foreground: 0 0% 95%;
+    /* Black with neon green accents */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 15% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 15% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 180 100% 50%;
-    --primary-foreground: 220 15% 8%;
+    --primary: 142 85% 55%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 280 60% 55%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 142 85% 55%;
 
-    --muted: 220 15% 18%;
+    --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 340 80% 55%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 142 85% 55%;
+    --accent-foreground: 0 0% 5%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 85% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 18%;
-    --ring: 180 100% 50%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 142 85% 55%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50%), hsl(200 100% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(280 60% 55%), hsl(260 70% 50%));
-    --gradient-dark: linear-gradient(180deg, hsl(220 15% 8%), hsl(220 15% 5%));
+    --gradient-primary: linear-gradient(135deg, hsl(142 85% 45%), hsl(142 85% 65%));
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 5%), hsl(0 0% 2%));
     
     /* Shadows and glows */
-    --shadow-glow: 0 0 30px hsl(180 100% 50% / 0.3);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 30px hsl(142 85% 55% / 0.4), 0 0 60px hsl(142 85% 55% / 0.2);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.6);
   }
 }
 
@@ -94,5 +93,21 @@ All colors MUST be HSL.
       transform: translateY(0);
       opacity: 1;
     }
+  }
+
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(0 0% 2%) 100%);
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(142 85% 45%) 0%, hsl(142 85% 65%) 100%);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary) / 0.5);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
 }

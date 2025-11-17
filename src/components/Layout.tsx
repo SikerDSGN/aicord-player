@@ -1,13 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Music, Library, ListMusic, Users, Upload, LogOut } from "lucide-react";
+import { Music, Library, ListMusic, Users, Upload, LogOut, Menu, X } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import aicordLogo from "@/assets/aicord-logo.png";
+import { useState } from "react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { signOut, userRole } = useAuth();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -15,21 +17,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-gradient-dark">
       <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={aicordLogo} alt="Aicord Logo" className="h-12 w-auto" />
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <Link to="/" className="flex items-center gap-2 md:gap-3">
+            <img src={aicordLogo} alt="Aicord Logo" className="h-8 md:h-12 w-auto" />
+            <span className="text-lg md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Aicord PLAYER
             </span>
           </Link>
 
-          <nav className="flex items-center gap-2">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
             <Link to="/">
               <Button
                 variant={isActive("/") ? "default" : "ghost"}
                 size="sm"
               >
                 <Library className="mr-2 h-4 w-4" />
-                Library
+                Knihovna
               </Button>
             </Link>
             
@@ -39,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 size="sm"
               >
                 <ListMusic className="mr-2 h-4 w-4" />
-                Playlists
+                Playlisty
               </Button>
             </Link>
 
@@ -51,7 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     size="sm"
                   >
                     <Users className="mr-2 h-4 w-4" />
-                    Users
+                    Uživatelé
                   </Button>
                 </Link>
                 <Link to="/admin/upload">
@@ -60,7 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     size="sm"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload
+                    Nahrát
                   </Button>
                 </Link>
               </>
@@ -68,10 +71,87 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+              Odhlásit
             </Button>
           </nav>
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
         </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-card">
+            <nav className="container flex flex-col gap-2 p-4">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant={isActive("/") ? "default" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <Library className="mr-2 h-4 w-4" />
+                  Knihovna
+                </Button>
+              </Link>
+              
+              <Link to="/playlists" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant={isActive("/playlists") ? "default" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <ListMusic className="mr-2 h-4 w-4" />
+                  Playlisty
+                </Button>
+              </Link>
+
+              {userRole === "admin" && (
+                <>
+                  <Link to="/admin/users" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant={isActive("/admin/users") ? "default" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start"
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Uživatelé
+                    </Button>
+                  </Link>
+                  <Link to="/admin/upload" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant={isActive("/admin/upload") ? "default" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Nahrát
+                    </Button>
+                  </Link>
+                </>
+              )}
+
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signOut();
+                }}
+                className="w-full justify-start"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Odhlásit
+              </Button>
+            </nav>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 pb-24">

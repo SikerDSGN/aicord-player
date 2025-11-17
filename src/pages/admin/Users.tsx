@@ -53,7 +53,7 @@ export default function Users() {
 
       setUsers(usersWithRoles);
     } catch (error: any) {
-      toast.error("Failed to load users");
+      toast.error("Nepodařilo se načíst uživatele");
       console.error(error);
     } finally {
       setLoading(false);
@@ -69,45 +69,45 @@ export default function Users() {
 
       if (error) throw error;
 
-      toast.success("User role updated successfully");
+      toast.success("Role uživatele úspěšně aktualizována");
       fetchUsers();
     } catch (error: any) {
-      toast.error("Failed to update user role");
+      toast.error("Nepodařilo se aktualizovat roli uživatele");
       console.error(error);
     }
   };
 
   if (loading) {
     return (
-      <div className="container py-8">
-        <p className="text-center text-muted-foreground">Loading users...</p>
+      <div className="container py-6 md:py-8 px-4">
+        <p className="text-center text-muted-foreground">Načítání uživatelů...</p>
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="mb-6 text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-        User Management
+    <div className="container py-6 md:py-8 px-4">
+      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        Správa uživatelů
       </h1>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3 md:gap-4">
         {users.map((user) => (
           <Card key={user.id} className="border-border bg-card">
-            <CardContent className="flex items-center justify-between p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <CardContent className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-muted flex-shrink-0">
                   {user.role === "admin" ? (
-                    <Shield className="h-6 w-6 text-primary" />
+                    <Shield className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                   ) : (
-                    <User className="h-6 w-6 text-muted-foreground" />
+                    <User className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground" />
                   )}
                 </div>
-                <div>
-                  <p className="font-semibold">{user.full_name || "Unknown"}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm md:text-base truncate">{user.full_name || "Neznámý"}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Joined {new Date(user.created_at).toLocaleDateString()}
+                    Připojeno {new Date(user.created_at).toLocaleDateString('cs-CZ')}
                   </p>
                 </div>
               </div>
@@ -123,8 +123,8 @@ export default function Users() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="listener">Listener</SelectItem>
+                    <SelectItem value="pending">Čeká</SelectItem>
+                    <SelectItem value="listener">Posluchač</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>

@@ -34,7 +34,7 @@ export default function Library() {
       if (error) throw error;
       setSongs(data || []);
     } catch (error: any) {
-      toast.error("Failed to load songs");
+      toast.error("Nepodařilo se načíst skladby");
       console.error(error);
     } finally {
       setLoading(false);
@@ -47,12 +47,12 @@ export default function Library() {
 
   if (loading) {
     return (
-      <div className="container py-8">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="container py-6 md:py-8 px-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
           {[...Array(10)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="aspect-square bg-muted"></div>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="h-4 bg-muted rounded mb-2"></div>
                 <div className="h-3 bg-muted rounded w-2/3"></div>
               </CardContent>
@@ -65,12 +65,12 @@ export default function Library() {
 
   if (songs.length === 0) {
     return (
-      <div className="container flex min-h-[60vh] items-center justify-center">
+      <div className="container flex min-h-[60vh] items-center justify-center px-4">
         <div className="text-center">
-          <Music className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
-          <h2 className="mt-4 text-2xl font-bold">No songs yet</h2>
-          <p className="mt-2 text-muted-foreground">
-            The library is empty. Check back soon!
+          <Music className="mx-auto h-12 md:h-16 w-12 md:w-16 text-primary opacity-50 neon-glow" />
+          <h2 className="mt-4 text-xl md:text-2xl font-bold">Zatím žádné skladby</h2>
+          <p className="mt-2 text-sm md:text-base text-muted-foreground">
+            Knihovna je prázdná. Zkontrolujte to brzy!
           </p>
         </div>
       </div>
@@ -78,12 +78,12 @@ export default function Library() {
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="mb-6 text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-        Music Library
+    <div className="container py-6 md:py-8 px-4">
+      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        Hudební knihovna
       </h1>
       
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
         {songs.map((song, index) => (
           <Card
             key={song.id}
@@ -98,22 +98,22 @@ export default function Library() {
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Music className="h-16 w-16 text-muted-foreground opacity-50" />
+                  <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
                 </div>
               )}
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   size="lg"
-                  className="h-14 w-14 rounded-full shadow-glow"
+                  className="h-12 w-12 md:h-14 md:w-14 rounded-full neon-glow"
                   onClick={() => handlePlaySong(song, index)}
                 >
-                  <Play className="h-6 w-6" />
+                  <Play className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
               </div>
             </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold truncate">{song.title}</h3>
-              <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
+            <CardContent className="p-3 md:p-4">
+              <h3 className="font-semibold truncate text-sm md:text-base">{song.title}</h3>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
             </CardContent>
           </Card>
         ))}
