@@ -4,8 +4,7 @@ import { usePlayer } from "@/contexts/PlayerContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Play, Music, Search, Heart } from "lucide-react";
+import { Play, Music, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 interface Song {
@@ -17,52 +16,63 @@ interface Song {
   description: string | null;
 }
 
-export default function Library() {
+export default function Favorites() {
   const [songs, setSongs] = useState<Song[]>([]);
-  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { playSong, playQueue } = usePlayer();
+  const { playQueue } = usePlayer();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchSongs();
     if (user) {
       fetchFavorites();
     }
   }, [user]);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredSongs(songs);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = songs.filter(
-        (song) =>
-          song.title.toLowerCase().includes(query) ||
-          song.artist.toLowerCase().includes(query) ||
-          song.description?.toLowerCase().includes(query)
-      );
-      setFilteredSongs(filtered);
-    }
-  }, [searchQuery, songs]);
-
-  const fetchSongs = async () => {
+  const fetchFavorites = async () => {
     try {
       const { data, error } = await supabase
-        .from("songs")
-        .select("*")
+        .from("favorites")
+        .select(`
+          song_id,
+          songs (
+            id,
+            title,
+            artist,
+            audio_url,
+            cover_url,
+            description
+          )
+        `)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setSongs(data || []);
-      setFilteredSongs(data || []);
+      
+      const favoriteSongs = data?.map((fav: any) => fav.songs).filter(Boolean) || [];
+      setSongs(favoriteSongs);
     } catch (error: any) {
-      toast.error("Nepodařilo se načíst skladby");
+      toast.error("Nepodařilo se načíst oblíbené");
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const removeFavorite = async (songId: string) => {
+    try {
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", user?.id)
+        .eq("song_id", songId);
+
+      if (error) throw error;
+      
+      setSongs(songs.filter(song => song.id !== songId));
+      toast.success("Odebráno z oblíbených");
+    } catch (error: any) {
+      toast.error("Nepodařilo se odebrat z oblíbených");
+      console.error(error);
     }
   };
 
@@ -70,67 +80,11 @@ export default function Library() {
     playQueue(songs, index);
   };
 
-  const fetchFavorites = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("favorites")
-        .select("song_id")
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-      
-      const favoriteIds = new Set(data?.map((fav) => fav.song_id) || []);
-      setFavorites(favoriteIds);
-    } catch (error: any) {
-      console.error("Error fetching favorites:", error);
-    }
-  };
-
-  const toggleFavorite = async (songId: string) => {
-    if (!user) {
-      toast.error("Pro přidání do oblíbených se přihlaste");
-      return;
-    }
-
-    const isFavorite = favorites.has(songId);
-
-    try {
-      if (isFavorite) {
-        const { error } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("song_id", songId);
-
-        if (error) throw error;
-        
-        setFavorites((prev) => {
-          const newFavorites = new Set(prev);
-          newFavorites.delete(songId);
-          return newFavorites;
-        });
-        toast.success("Odebráno z oblíbených");
-      } else {
-        const { error } = await supabase
-          .from("favorites")
-          .insert({ user_id: user.id, song_id: songId });
-
-        if (error) throw error;
-        
-        setFavorites((prev) => new Set(prev).add(songId));
-        toast.success("Přidáno do oblíbených");
-      }
-    } catch (error: any) {
-      toast.error("Chyba při aktualizaci oblíbených");
-      console.error(error);
-    }
-  };
-
   if (loading) {
     return (
       <div className="container py-6 md:py-8 px-4">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-          {[...Array(10)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="aspect-square bg-muted"></div>
               <CardContent className="p-3 md:p-4">
@@ -148,10 +102,10 @@ export default function Library() {
     return (
       <div className="container flex min-h-[60vh] items-center justify-center px-4">
         <div className="text-center">
-          <Music className="mx-auto h-12 md:h-16 w-12 md:w-16 text-primary opacity-50 neon-glow" />
-          <h2 className="mt-4 text-xl md:text-2xl font-bold">Zatím žádné skladby</h2>
+          <Heart className="mx-auto h-12 md:h-16 w-12 md:w-16 text-primary opacity-50 neon-glow" />
+          <h2 className="mt-4 text-xl md:text-2xl font-bold">Žádné oblíbené skladby</h2>
           <p className="mt-2 text-sm md:text-base text-muted-foreground">
-            Knihovna je prázdná. Zkontrolujte to brzy!
+            Začněte přidávat skladby do oblíbených kliknutím na srdíčko
           </p>
         </div>
       </div>
@@ -161,29 +115,11 @@ export default function Library() {
   return (
     <div className="container py-6 md:py-8 px-4">
       <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-        Hudební knihovna
+        Oblíbené skladby
       </h1>
       
-      <div className="mb-6 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Hledat podle názvu, interpreta..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 neon-glow"
-        />
-      </div>
-
-      {filteredSongs.length === 0 && searchQuery && (
-        <div className="text-center py-8">
-          <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-          <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
-        </div>
-      )}
-      
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-        {filteredSongs.map((song, index) => (
+        {songs.map((song, index) => (
           <Card
             key={song.id}
             className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow hover:scale-105"
@@ -213,18 +149,9 @@ export default function Library() {
                 size="sm"
                 variant="ghost"
                 className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite(song.id);
-                }}
+                onClick={() => removeFavorite(song.id)}
               >
-                <Heart 
-                  className={`h-4 w-4 ${
-                    favorites.has(song.id)
-                      ? "fill-primary text-primary"
-                      : "text-white"
-                  }`}
-                />
+                <Heart className="h-4 w-4 fill-primary text-primary" />
               </Button>
             </div>
             <CardContent className="p-3 md:p-4">

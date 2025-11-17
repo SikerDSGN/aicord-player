@@ -15,6 +15,8 @@ interface PlayerContextType {
   duration: number;
   volume: number;
   queue: Song[];
+  shuffle: boolean;
+  repeat: "off" | "all" | "one";
   playSong: (song: Song) => void;
   playQueue: (songs: Song[], startIndex: number) => void;
   togglePlay: () => void;
@@ -22,6 +24,8 @@ interface PlayerContextType {
   setVolume: (volume: number) => void;
   playNext: () => void;
   playPrevious: () => void;
+  toggleShuffle: () => void;
+  toggleRepeat: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -34,6 +38,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [volume, setVolume] = useState(0.7);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [shuffle, setShuffle] = useState(false);
+  const [repeat, setRepeat] = useState<"off" | "all" | "one">("off");
+  const [originalQueue, setOriginalQueue] = useState<Song[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -49,7 +56,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     });
 
     audio.addEventListener("ended", () => {
-      playNext();
+      if (repeat === "one") {
+        seekTo(0);
+        setIsPlaying(true);
+      } else {
+        playNext();
+      }
     });
 
     return () => {
@@ -92,6 +104,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const playQueue = (songs: Song[], startIndex: number) => {
     setQueue(songs);
+    setOriginalQueue(songs);
     setCurrentIndex(startIndex);
     setCurrentSong(songs[startIndex]);
     setIsPlaying(true);
@@ -109,10 +122,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const playNext = () => {
-    if (queue.length > 0 && currentIndex < queue.length - 1) {
+    if (queue.length === 0) return;
+
+    if (currentIndex < queue.length - 1) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setCurrentSong(queue[nextIndex]);
+      setIsPlaying(true);
+    } else if (repeat === "all") {
+      setCurrentIndex(0);
+      setCurrentSong(queue[0]);
       setIsPlaying(true);
     }
   };
@@ -128,6 +147,44 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const toggleShuffle = () => {
+    if (!shuffle) {
+      // Enable shuffle - create a shuffled copy
+      const shuffledQueue = [...queue];
+      const currentSongCopy = queue[currentIndex];
+      
+      // Remove current song from shuffle
+      shuffledQueue.splice(currentIndex, 1);
+      
+      // Shuffle remaining songs
+      for (let i = shuffledQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledQueue[i], shuffledQueue[j]] = [shuffledQueue[j], shuffledQueue[i]];
+      }
+      
+      // Put current song at the beginning
+      shuffledQueue.unshift(currentSongCopy);
+      
+      setQueue(shuffledQueue);
+      setCurrentIndex(0);
+    } else {
+      // Disable shuffle - restore original queue
+      const currentSongId = currentSong?.id;
+      const originalIndex = originalQueue.findIndex(s => s.id === currentSongId);
+      setQueue(originalQueue);
+      setCurrentIndex(originalIndex >= 0 ? originalIndex : 0);
+    }
+    setShuffle(!shuffle);
+  };
+
+  const toggleRepeat = () => {
+    setRepeat((current) => {
+      if (current === "off") return "all";
+      if (current === "all") return "one";
+      return "off";
+    });
+  };
+
   return (
     <PlayerContext.Provider
       value={{
@@ -137,6 +194,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         duration,
         volume,
         queue,
+        shuffle,
+        repeat,
         playSong,
         playQueue,
         togglePlay,
@@ -144,6 +203,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setVolume,
         playNext,
         playPrevious,
+        toggleShuffle,
+        toggleRepeat,
       }}
     >
       {children}
