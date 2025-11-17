@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Music, Library, ListMusic, Users, Upload, LogOut, Menu, X } from "lucide-react";
+import { Music, Library, ListMusic, Users, Upload, LogOut, Menu, X, Heart } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import aicordLogo from "@/assets/aicord-logo.png";
 import { useState } from "react";
@@ -43,6 +43,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
               >
                 <ListMusic className="mr-2 h-4 w-4" />
                 Playlisty
+              </Button>
+            </Link>
+
+            <Link to="/favorites">
+              <Button
+                variant={isActive("/favorites") ? "default" : "ghost"}
+                size="sm"
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                Oblíbené
               </Button>
             </Link>
 
@@ -109,6 +119,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 >
                   <ListMusic className="mr-2 h-4 w-4" />
                   Playlisty
+                </Button>
+              </Link>
+
+              <Link to="/favorites" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant={isActive("/favorites") ? "default" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <Heart className="mr-2 h-4 w-4" />
+                  Oblíbené
                 </Button>
               </Link>
 

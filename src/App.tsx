@@ -10,6 +10,7 @@ import { Layout } from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Pending from "./pages/Pending";
 import Library from "./pages/Library";
+import Favorites from "./pages/Favorites";
 import Playlists from "./pages/Playlists";
 import Users from "./pages/admin/Users";
 import Upload from "./pages/admin/Upload";
@@ -54,6 +55,17 @@ const App = () => (
                   <ProtectedRoute allowedRoles={["admin", "listener"]}>
                     <Layout>
                       <Playlists />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/favorites"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "listener"]}>
+                    <Layout>
+                      <Favorites />
                     </Layout>
                   </ProtectedRoute>
                 }

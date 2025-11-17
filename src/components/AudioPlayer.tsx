@@ -1,7 +1,7 @@
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Repeat, Repeat1 } from "lucide-react";
 
 export function AudioPlayer() {
   const {
@@ -10,11 +10,15 @@ export function AudioPlayer() {
     currentTime,
     duration,
     volume,
+    shuffle,
+    repeat,
     togglePlay,
     seekTo,
     setVolume,
     playNext,
     playPrevious,
+    toggleShuffle,
+    toggleRepeat,
   } = usePlayer();
 
   if (!currentSong) return null;
@@ -47,14 +51,34 @@ export function AudioPlayer() {
           {/* Controls */}
           <div className="flex flex-col items-center gap-2 flex-1">
             <div className="flex items-center gap-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={toggleShuffle}
+                className={shuffle ? "text-primary" : ""}
+              >
+                <Shuffle className="h-4 w-4" />
+              </Button>
               <Button size="sm" variant="ghost" onClick={playPrevious}>
                 <SkipBack className="h-4 w-4" />
               </Button>
-              <Button size="sm" onClick={togglePlay} className="h-9 w-9 rounded-full">
+              <Button size="sm" onClick={togglePlay} className="h-9 w-9 rounded-full neon-glow">
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               <Button size="sm" variant="ghost" onClick={playNext}>
                 <SkipForward className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={toggleRepeat}
+                className={repeat !== "off" ? "text-primary" : ""}
+              >
+                {repeat === "one" ? (
+                  <Repeat1 className="h-4 w-4" />
+                ) : (
+                  <Repeat className="h-4 w-4" />
+                )}
               </Button>
             </div>
             
