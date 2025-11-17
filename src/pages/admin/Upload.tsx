@@ -1,0 +1,192 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Upload as UploadIcon, Music } from "lucide-react";
+
+export default function Upload() {
+  const { user } = useAuth();
+  const [title, setTitle] = useState("");
+  const [artist, setArtist] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!audioFile || !user) return;
+
+    setUploading(true);
+
+    try {
+      // Upload audio file
+      const audioFileName = `${Date.now()}-${audioFile.name}`;
+      const { error: audioError } = await supabase.storage
+        .from("audio")
+        .upload(audioFileName, audioFile);
+
+      if (audioError) throw audioError;
+
+      const { data: audioData } = supabase.storage
+        .from("audio")
+        .getPublicUrl(audioFileName);
+
+      // Upload cover image if provided
+      let coverUrl = null;
+      if (coverFile) {
+        const coverFileName = `${Date.now()}-${coverFile.name}`;
+        const { error: coverError } = await supabase.storage
+          .from("covers")
+          .upload(coverFileName, coverFile);
+
+        if (coverError) throw coverError;
+
+        const { data: coverData } = supabase.storage
+          .from("covers")
+          .getPublicUrl(coverFileName);
+
+        coverUrl = coverData.publicUrl;
+      }
+
+      // Create song record
+      const { error: dbError } = await supabase.from("songs").insert({
+        title,
+        artist,
+        description: description || null,
+        tags: tags ? tags.split(",").map((t) => t.trim()) : [],
+        audio_url: audioData.publicUrl,
+        cover_url: coverUrl,
+        uploaded_by: user.id,
+      });
+
+      if (dbError) throw dbError;
+
+      toast.success("Song uploaded successfully!");
+      
+      // Reset form
+      setTitle("");
+      setArtist("");
+      setDescription("");
+      setTags("");
+      setAudioFile(null);
+      setCoverFile(null);
+    } catch (error: any) {
+      toast.error("Failed to upload song");
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="container max-w-2xl py-8">
+      <Card className="border-border bg-card shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <UploadIcon className="h-6 w-6 text-primary" />
+            Upload New Song
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter song title"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="artist">Artist *</Label>
+              <Input
+                id="artist"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                placeholder="Enter artist name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add a description (optional)"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Enter tags separated by commas"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="audio">Audio File (MP3/WAV) *</Label>
+              <Input
+                id="audio"
+                type="file"
+                accept="audio/mpeg,audio/wav"
+                onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                required
+              />
+              {audioFile && (
+                <p className="text-sm text-muted-foreground">
+                  {audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cover">Cover Image (Optional)</Label>
+              <Input
+                id="cover"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+              />
+              {coverFile && (
+                <p className="text-sm text-muted-foreground">
+                  {coverFile.name}
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={uploading || !audioFile}
+            >
+              {uploading ? (
+                <>Uploading...</>
+              ) : (
+                <>
+                  <Music className="mr-2 h-4 w-4" />
+                  Upload Song
+                </>
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

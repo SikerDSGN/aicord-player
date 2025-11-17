@@ -2,8 +2,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { PlayerProvider } from "@/contexts/PlayerContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Layout } from "@/components/Layout";
+import Auth from "./pages/Auth";
+import Pending from "./pages/Pending";
+import Library from "./pages/Library";
+import Playlists from "./pages/Playlists";
+import Users from "./pages/admin/Users";
+import Upload from "./pages/admin/Upload";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +23,68 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <PlayerProvider>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              
+              <Route
+                path="/pending"
+                element={
+                  <ProtectedRoute>
+                    <Pending />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "listener"]}>
+                    <Layout>
+                      <Library />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/playlists"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "listener"]}>
+                    <Layout>
+                      <Playlists />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Layout>
+                      <Users />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/upload"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Layout>
+                      <Upload />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PlayerProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
