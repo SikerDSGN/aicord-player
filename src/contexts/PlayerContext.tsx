@@ -17,6 +17,7 @@ interface PlayerContextType {
   queue: Song[];
   shuffle: boolean;
   repeat: "off" | "all" | "one";
+  audioRef: React.MutableRefObject<HTMLAudioElement | null>;
   playSong: (song: Song) => void;
   playQueue: (songs: Song[], startIndex: number) => void;
   togglePlay: () => void;
@@ -196,6 +197,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         queue,
         shuffle,
         repeat,
+        audioRef,
         playSong,
         playQueue,
         togglePlay,

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PlayerProvider } from "@/contexts/PlayerContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
+import { NotificationManager } from "@/components/NotificationManager";
 import Auth from "./pages/Auth";
 import Pending from "./pages/Pending";
 import Library from "./pages/Library";
@@ -27,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <PlayerProvider>
+            <NotificationManager />
             <Routes>
               <Route path="/auth" element={<Auth />} />
               
