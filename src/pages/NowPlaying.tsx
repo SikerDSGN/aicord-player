@@ -57,11 +57,32 @@ export default function NowPlaying() {
 
   if (!currentSong) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Music className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
-          <h2 className="mt-4 text-2xl font-bold">Žádná skladba se nepřehrává</h2>
-          <p className="mt-2 text-muted-foreground">Začněte přehrávat z knihovny</p>
+      <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-[200] overflow-auto">
+        <header className="sticky top-0 z-10 bg-gradient-to-b from-background/95 to-transparent backdrop-blur-md border-b border-border/20">
+          <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <ChevronDown className="h-6 w-6" />
+              <span className="text-sm sm:text-base">Zpět do knihovny</span>
+            </Button>
+          </div>
+        </header>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <div className="text-center">
+            <Music className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
+            <h2 className="mt-4 text-2xl font-bold">Žádná skladba se nepřehrává</h2>
+            <p className="mt-2 text-muted-foreground">Začněte přehrávat z knihovny</p>
+            <Button 
+              onClick={() => navigate("/")}
+              className="mt-6"
+            >
+              Přejít do knihovny
+            </Button>
+          </div>
         </div>
       </div>
     );

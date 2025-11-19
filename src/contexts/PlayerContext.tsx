@@ -127,7 +127,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         audio.removeEventListener('error', handleError);
       };
     }
-  }, [currentSong, isPlaying]);
+  }, [currentSong]);
 
   useEffect(() => {
     if (audioRef.current && currentSong) {
@@ -183,9 +183,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const seekTo = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
+    if (audioRef.current && currentSong) {
+      console.log("Seeking to:", time);
+      try {
+        audioRef.current.currentTime = time;
+        setCurrentTime(time);
+      } catch (error) {
+        console.error("Error seeking:", error);
+      }
     }
   };
 
