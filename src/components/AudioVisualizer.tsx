@@ -14,16 +14,33 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
   useEffect(() => {
     if (!audioElement || !canvasRef.current) return;
 
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audioElement);
+    // Check if audio context already exists
+    const existingContext = (audioElement as any)._audioContext;
+    let audioContext: AudioContext;
+    let analyser: AnalyserNode;
+    let source: MediaElementAudioSourceNode;
+
+    if (existingContext) {
+      audioContext = existingContext;
+      analyser = (audioElement as any)._analyser;
+      source = (audioElement as any)._source;
+    } else {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      source = audioContext.createMediaElementSource(audioElement);
+      
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      // Store references to prevent recreating
+      (audioElement as any)._audioContext = audioContext;
+      (audioElement as any)._analyser = analyser;
+      (audioElement as any)._source = source;
+    }
     
     analyser.fftSize = 256;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength) as Uint8Array;
-
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
 
     analyserRef.current = analyser;
     dataArrayRef.current = dataArray;
@@ -32,9 +49,6 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      source.disconnect();
-      analyser.disconnect();
-      audioContext.close();
     };
   }, [audioElement]);
 

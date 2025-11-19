@@ -14,6 +14,7 @@ import Library from "./pages/Library";
 import Favorites from "./pages/Favorites";
 import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
+import NowPlaying from "./pages/NowPlaying";
 import Users from "./pages/admin/Users";
 import Upload from "./pages/admin/Upload";
 import NotFound from "./pages/NotFound";
@@ -47,6 +48,17 @@ const App = () => (
                   <ProtectedRoute allowedRoles={["admin", "listener"]}>
                     <Layout>
                       <Library />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/now-playing"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "listener"]}>
+                    <Layout>
+                      <NowPlaying />
                     </Layout>
                   </ProtectedRoute>
                 }

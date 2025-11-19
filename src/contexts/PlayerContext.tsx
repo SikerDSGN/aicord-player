@@ -6,6 +6,7 @@ interface Song {
   artist: string;
   audio_url: string;
   cover_url?: string;
+  description?: string | null;
 }
 
 interface PlayerContextType {

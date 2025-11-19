@@ -2,7 +2,6 @@ import { usePlayer } from "@/contexts/PlayerContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle, Repeat, Repeat1 } from "lucide-react";
-import { AudioVisualizer } from "./AudioVisualizer";
 
 export function AudioPlayer() {
   const {
@@ -33,11 +32,6 @@ export function AudioPlayer() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated">
-      {/* Audio Visualizer */}
-      <div className="container px-4 pt-3">
-        <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
-      </div>
-      
       <div className="container px-4 py-3">
         <div className="flex items-center gap-4">
           {/* Song Info */}
