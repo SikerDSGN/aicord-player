@@ -453,7 +453,7 @@ export default function Library() {
                         className="h-12 w-12 md:h-14 md:w-14 rounded-full"
                         onClick={() => handlePlaySong(song, index)}
                       >
-                        {isCurrentlyPlaying ? (
+                        {isCurrentlyPlaying && isPlaying ? (
                           <Pause className="h-5 w-5 md:h-6 md:w-6" />
                         ) : (
                           <Play className="h-5 w-5 md:h-6 md:w-6" />
