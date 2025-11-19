@@ -57,9 +57,7 @@ const App = () => (
                 path="/now-playing"
                 element={
                   <ProtectedRoute allowedRoles={["admin", "listener"]}>
-                    <Layout>
-                      <NowPlaying />
-                    </Layout>
+                    <NowPlaying />
                   </ProtectedRoute>
                 }
               />

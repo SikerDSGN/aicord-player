@@ -106,31 +106,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Overlay */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card">
-            <nav className="container flex flex-col gap-2 p-4">
-              <Link to="/now-playing" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant={isActive("/now-playing") ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <Music className="mr-2 h-4 w-4" />
-                  Přehrávač
-                </Button>
-              </Link>
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Menu Panel */}
+            <div className="fixed top-16 left-0 right-0 bottom-0 bg-card border-t border-border z-50 md:hidden overflow-y-auto">
+              <nav className="container flex flex-col gap-2 p-4">
+                <Link to="/now-playing" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant={isActive("/now-playing") ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start"
+                  >
+                    <Music className="mr-2 h-4 w-4" />
+                    Přehrávač
+                  </Button>
+                </Link>
 
-              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant={isActive("/") ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <Library className="mr-2 h-4 w-4" />
-                  Knihovna
-                </Button>
-              </Link>
+                <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant={isActive("/") ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start"
+                  >
+                    <Library className="mr-2 h-4 w-4" />
+                    Knihovna
+                  </Button>
+                </Link>
               
               <Link to="/playlists" onClick={() => setMobileMenuOpen(false)}>
                 <Button
@@ -193,6 +201,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Button>
             </nav>
           </div>
+          </>
         )}
       </header>
 
