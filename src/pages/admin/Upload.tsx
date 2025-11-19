@@ -19,6 +19,16 @@ export default function Upload() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const sanitizeFileName = (fileName: string) => {
+    // Remove special characters and replace spaces with underscores
+    return fileName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+      .replace(/[^\w\s.-]/g, "") // Remove special chars except word chars, spaces, dots, dashes
+      .replace(/\s+/g, "_") // Replace spaces with underscores
+      .replace(/_+/g, "_"); // Replace multiple underscores with single
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!audioFile || !user) return;
@@ -27,7 +37,8 @@ export default function Upload() {
 
     try {
       // Upload audio file
-      const audioFileName = `${Date.now()}-${audioFile.name}`;
+      const sanitizedAudioName = sanitizeFileName(audioFile.name);
+      const audioFileName = `${Date.now()}-${sanitizedAudioName}`;
       const { error: audioError } = await supabase.storage
         .from("audio")
         .upload(audioFileName, audioFile);
@@ -41,7 +52,8 @@ export default function Upload() {
       // Upload cover image if provided
       let coverUrl = null;
       if (coverFile) {
-        const coverFileName = `${Date.now()}-${coverFile.name}`;
+        const sanitizedCoverName = sanitizeFileName(coverFile.name);
+        const coverFileName = `${Date.now()}-${sanitizedCoverName}`;
         const { error: coverError } = await supabase.storage
           .from("covers")
           .upload(coverFileName, coverFile);

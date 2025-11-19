@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Play, Music, Search, Heart, Trash2 } from "lucide-react";
+import { Play, Music, Search, Heart, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -17,6 +17,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Song {
   id: string;
@@ -34,6 +44,15 @@ export default function Library() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [songToDelete, setSongToDelete] = useState<string | null>(null);
+  const [editingSong, setEditingSong] = useState<Song | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    artist: "",
+    description: "",
+    cover_url: "",
+  });
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { playSong, playQueue, currentSong } = usePlayer();
   const { user, userRole } = useAuth();
 
@@ -156,6 +175,91 @@ export default function Library() {
     }
   };
 
+  const openEditDialog = (song: Song) => {
+    setEditingSong(song);
+    setEditForm({
+      title: song.title,
+      artist: song.artist,
+      description: song.description || "",
+      cover_url: song.cover_url || "",
+    });
+    setCoverFile(null);
+  };
+
+  const sanitizeFileName = (fileName: string) => {
+    return fileName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s.-]/g, "")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_");
+  };
+
+  const handleUpdateSong = async () => {
+    if (!editingSong) return;
+
+    setUploading(true);
+
+    try {
+      let coverUrl = editForm.cover_url;
+
+      // Upload new cover if provided
+      if (coverFile) {
+        const sanitizedCoverName = sanitizeFileName(coverFile.name);
+        const coverFileName = `${Date.now()}-${sanitizedCoverName}`;
+        const { error: coverError } = await supabase.storage
+          .from("covers")
+          .upload(coverFileName, coverFile);
+
+        if (coverError) throw coverError;
+
+        const { data: coverData } = supabase.storage
+          .from("covers")
+          .getPublicUrl(coverFileName);
+
+        coverUrl = coverData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from("songs")
+        .update({
+          title: editForm.title,
+          artist: editForm.artist,
+          description: editForm.description || null,
+          cover_url: coverUrl,
+        })
+        .eq("id", editingSong.id);
+
+      if (error) throw error;
+
+      toast.success("Skladba byla aktualizována");
+      
+      // Update local state
+      setSongs((prev) =>
+        prev.map((song) =>
+          song.id === editingSong.id
+            ? { ...song, ...editForm, cover_url: coverUrl }
+            : song
+        )
+      );
+      setFilteredSongs((prev) =>
+        prev.map((song) =>
+          song.id === editingSong.id
+            ? { ...song, ...editForm, cover_url: coverUrl }
+            : song
+        )
+      );
+      
+      setEditingSong(null);
+      setCoverFile(null);
+    } catch (error: any) {
+      toast.error("Nepodařilo se aktualizovat skladbu");
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container py-6 md:py-8 px-4">
@@ -266,17 +370,30 @@ export default function Library() {
                     />
                   </Button>
                   {userRole === "admin" && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSongToDelete(song.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-white" />
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-primary/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditDialog(song);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 text-white" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSongToDelete(song.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-white" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -312,6 +429,74 @@ export default function Library() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!editingSong} onOpenChange={() => setEditingSong(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Upravit skladbu</DialogTitle>
+            <DialogDescription>
+              Změňte informace o skladbě
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Název</Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, title: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-artist">Interpret</Label>
+              <Input
+                id="edit-artist"
+                value={editForm.artist}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, artist: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Popis</Label>
+              <Textarea
+                id="edit-description"
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, description: e.target.value })
+                }
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-cover">Nový obrázek (volitelné)</Label>
+              <Input
+                id="edit-cover"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+              />
+              {coverFile && (
+                <p className="text-sm text-muted-foreground">{coverFile.name}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingSong(null)}
+              disabled={uploading}
+            >
+              Zrušit
+            </Button>
+            <Button onClick={handleUpdateSong} disabled={uploading}>
+              {uploading ? "Ukládám..." : "Uložit změny"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
