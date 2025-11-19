@@ -19,22 +19,28 @@ export default defineConfig(({ mode }) => ({
       manifest: {
         name: "Aicord PLAYER",
         short_name: "Aicord",
-        description: "Soukromá streamovací platforma",
+        description: "Soukromá streamovací platforma pro hudbu",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",
+        orientation: "portrait",
+        start_url: "/",
+        scope: "/",
         icons: [
           {
             src: "/aicord-logo.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any maskable",
           },
           {
             src: "/aicord-logo.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "any maskable",
           },
         ],
+        categories: ["music", "entertainment"],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],

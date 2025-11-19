@@ -14,6 +14,7 @@ import Library from "./pages/Library";
 import Favorites from "./pages/Favorites";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import NowPlaying from "./pages/NowPlaying";
+import Install from "./pages/Install";
 import Users from "./pages/admin/Users";
 import Upload from "./pages/admin/Upload";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
             <NotificationManager />
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/install" element={<Install />} />
               
               <Route
                 path="/pending"
