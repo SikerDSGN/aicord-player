@@ -15,7 +15,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-dark">
-      <header className="sticky top-0 z-10 border-b border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated supports-[backdrop-filter]:bg-card/60">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2 md:gap-3 hover-scale">
             <img src={aicordLogo} alt="Aicord Logo" className="h-8 md:h-12 w-auto" />
@@ -111,12 +111,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <>
             {/* Backdrop */}
             <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] md:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
             
             {/* Menu Panel */}
-            <div className="fixed top-16 left-0 right-0 bottom-0 bg-card border-t border-border z-50 md:hidden overflow-y-auto">
+            <div className="fixed top-16 left-0 right-0 bottom-0 bg-card border-t border-border z-[70] md:hidden overflow-y-auto">
               <nav className="container flex flex-col gap-2 p-4">
                 <Link to="/now-playing" onClick={() => setMobileMenuOpen(false)}>
                   <Button
