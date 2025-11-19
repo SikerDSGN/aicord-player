@@ -4,7 +4,7 @@ import { usePlayer } from "@/contexts/PlayerContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Music, Heart } from "lucide-react";
+import { Play, Pause, Music, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
 
@@ -144,7 +144,11 @@ export default function Favorites() {
                     className="h-12 w-12 md:h-14 md:w-14 rounded-full"
                     onClick={() => handlePlaySong(song, index)}
                   >
-                    <Play className="h-5 w-5 md:h-6 md:w-6" />
+                    {isCurrentlyPlaying ? (
+                      <Pause className="h-5 w-5 md:h-6 md:w-6" />
+                    ) : (
+                      <Play className="h-5 w-5 md:h-6 md:w-6" />
+                    )}
                   </Button>
                 </div>
                 <Button

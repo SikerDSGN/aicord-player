@@ -5,7 +5,7 @@ import { usePlayer } from "@/contexts/PlayerContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Music, ArrowLeft, Trash2, Plus, X } from "lucide-react";
+import { Play, Pause, Music, ArrowLeft, Trash2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -320,7 +320,11 @@ export default function PlaylistDetail() {
                       onClick={() => handlePlaySong(index)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <Play className="h-4 w-4" />
+                      {isCurrentlyPlaying ? (
+                        <Pause className="h-4 w-4" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
                     </Button>
                     {isOwner && (
                       <Button
