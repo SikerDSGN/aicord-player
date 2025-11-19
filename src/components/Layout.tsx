@@ -15,11 +15,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-dark">
-      <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <header className="sticky top-0 z-10 border-b border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2 md:gap-3">
+          <Link to="/" className="flex items-center gap-2 md:gap-3 hover-scale">
             <img src={aicordLogo} alt="Aicord Logo" className="h-8 md:h-12 w-auto" />
-            <span className="text-lg md:text-xl font-bold text-primary">
+            <span className="text-lg md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Aicord PLAYER
             </span>
           </Link>

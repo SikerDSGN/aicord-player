@@ -66,9 +66,9 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-dark p-4">
-      <Card className="w-full max-w-md border-border bg-card shadow-card">
+      <Card className="w-full max-w-md border-border/50 shadow-elevated animate-scale-in">
         <CardHeader className="space-y-1 text-center">
-          <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 md:h-20 mb-4" />
+          <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 md:h-20 mb-4 hover-scale" />
           <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Aicord PLAYER
           </CardTitle>
@@ -79,11 +79,11 @@ export default function Auth() {
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Přihlášení</TabsTrigger>
-              <TabsTrigger value="signup">Registrace</TabsTrigger>
+              <TabsTrigger value="signin" className="transition-smooth">Přihlášení</TabsTrigger>
+              <TabsTrigger value="signup" className="transition-smooth">Registrace</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin">
+            <TabsContent value="signin" className="animate-fade-in-fast">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
@@ -106,13 +106,13 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full shadow-glow" disabled={loading}>
+                <Button type="submit" variant="glow" className="w-full" disabled={loading}>
                   {loading ? "Přihlašování..." : "Přihlásit se"}
                 </Button>
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="animate-fade-in-fast">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Celé jméno</Label>
@@ -147,7 +147,7 @@ export default function Auth() {
                     minLength={6}
                   />
                 </div>
-                <Button type="submit" className="w-full shadow-glow" disabled={loading}>
+                <Button type="submit" variant="glow" className="w-full" disabled={loading}>
                   {loading ? "Vytváření účtu..." : "Vytvořit účet"}
                 </Button>
               </form>
