@@ -84,10 +84,15 @@ export default function Favorites() {
   };
 
   const handlePlaySong = (song: Song, index: number) => {
-    // If clicking on currently playing song, just toggle play/pause
-    if (currentSong?.id === song.id) {
+    // If clicking on currently playing song and it's playing, just toggle pause
+    if (currentSong?.id === song.id && isPlaying) {
       togglePlay();
+    } else if (currentSong?.id === song.id && !isPlaying) {
+      // If same song but paused, resume and navigate to player
+      togglePlay();
+      navigate("/now-playing");
     } else {
+      // Different song, play it and navigate
       playQueue(songs, index);
     }
   };
