@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
+import { NowPlayingNav } from "@/components/NowPlayingNav";
 import { 
   Play, 
   Pause, 
@@ -14,7 +15,6 @@ import {
   Repeat, 
   Repeat1,
   List,
-  X,
   Music
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -63,7 +63,10 @@ export default function NowPlaying() {
   const currentIndex = queue.findIndex(song => song.id === currentSong.id);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <>
+      <NowPlayingNav />
+      
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-muted/20 pt-16">
       {/* Main Content */}
       <div className="flex-1 container max-w-4xl mx-auto px-4 py-8 flex flex-col items-center justify-center">
         {/* Album Art */}
@@ -252,5 +255,6 @@ export default function NowPlaying() {
         </Sheet>
       </div>
     </div>
+    </>
   );
 }
