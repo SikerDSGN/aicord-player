@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
-import { NowPlayingNav } from "@/components/NowPlayingNav";
 import { 
   Play, 
   Pause, 
@@ -15,9 +14,14 @@ import {
   Repeat, 
   Repeat1,
   List,
-  Music
+  Music,
+  ChevronDown,
+  MoreVertical,
+  Heart
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
+import aicordLogo from "@/assets/aicord-logo.png";
 
 export default function NowPlaying() {
   const {
@@ -63,12 +67,27 @@ export default function NowPlaying() {
   const currentIndex = queue.findIndex(song => song.id === currentSong.id);
 
   return (
-    <>
-      <NowPlayingNav />
-      
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-muted/20 pt-16">
-      {/* Main Content */}
-      <div className="flex-1 container max-w-4xl mx-auto px-4 py-8 flex flex-col items-center justify-center">
+    <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-[100] overflow-auto">
+      {/* Header - YouTube Music Style */}
+      <header className="sticky top-0 z-10 bg-gradient-to-b from-background/95 to-transparent backdrop-blur-md border-b border-border/20">
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <ChevronDown className="h-6 w-6" />
+            <span className="text-sm sm:text-base">Zpět</span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <img src={aicordLogo} alt="Aicord" className="h-7 sm:h-8 w-auto opacity-80" />
+          </div>
+
+          <Button variant="ghost" size="icon">
+            <MoreVertical className="h-5 w-5" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content - Centered like YouTube Music */}
+      <div className="container max-w-4xl mx-auto px-4 py-6 sm:py-12 flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)]">
         {/* Album Art */}
         <div className="relative mb-8 animate-fade-in">
           <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 hover-scale transition-smooth">
@@ -87,86 +106,79 @@ export default function NowPlaying() {
         </div>
 
         {/* Song Info */}
-        <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+        <div className="w-full max-w-2xl text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground truncate px-4">
             {currentSong.title}
           </h1>
-          <p className="text-xl text-muted-foreground">{currentSong.artist}</p>
-          {currentSong.description && (
-            <p className="text-sm text-muted-foreground mt-2 max-w-md">
-              {currentSong.description}
-            </p>
-          )}
+          <p className="text-lg sm:text-xl text-muted-foreground truncate px-4">{currentSong.artist}</p>
         </div>
 
-        {/* Audio Visualizer */}
-        <div className="w-full max-w-2xl mb-8">
-          <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full max-w-2xl mb-8">
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={1}
-            onValueChange={(value) => seekTo(value[0])}
-            className="mb-2 cursor-pointer"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>-{formatTime(duration - currentTime)}</span>
+        {/* Controls Container */}
+        <div className="w-full max-w-2xl space-y-6">
+          {/* Progress Bar */}
+          <div className="px-4">
+            <Slider
+              value={[currentTime]}
+              min={0}
+              max={duration || 100}
+              step={1}
+              onValueChange={(value) => seekTo(value[0])}
+              className="mb-2 cursor-pointer"
+            />
+            <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
           </div>
-        </div>
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-6 mb-8">
-          <div className="flex items-center gap-4">
+          {/* Main Controls */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6">
             <Button
-              size="lg"
+              size="icon"
               variant="ghost"
               onClick={toggleShuffle}
-              className={shuffle ? "text-primary" : ""}
+              className={shuffle ? "text-primary" : "text-muted-foreground"}
             >
               <Shuffle className="h-5 w-5" />
             </Button>
             
             <Button 
-              size="lg" 
-              variant="ghost" 
+              size="icon"
+              variant="ghost"
               onClick={playPrevious}
               disabled={currentIndex <= 0}
+              className="h-10 w-10 sm:h-12 sm:w-12"
             >
-              <SkipBack className="h-6 w-6" />
+              <SkipBack className="h-6 w-6 sm:h-7 sm:w-7" />
             </Button>
             
             <Button
-              size="lg"
+              size="icon"
               onClick={togglePlay}
-              className="h-16 w-16 rounded-full bg-gradient-primary shadow-glow hover:shadow-glow-strong hover:scale-110 transition-smooth"
+              className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary hover:bg-primary/90 shadow-lg hover:scale-105 transition-all"
             >
               {isPlaying ? (
-                <Pause className="h-8 w-8" />
+                <Pause className="h-7 w-7 sm:h-8 sm:w-8" />
               ) : (
-                <Play className="h-8 w-8 ml-1" />
+                <Play className="h-7 w-7 sm:h-8 sm:w-8 ml-1" />
               )}
             </Button>
             
             <Button 
-              size="lg" 
-              variant="ghost" 
+              size="icon"
+              variant="ghost"
               onClick={playNext}
               disabled={currentIndex >= queue.length - 1 && repeat === "off"}
+              className="h-10 w-10 sm:h-12 sm:w-12"
             >
-              <SkipForward className="h-6 w-6" />
+              <SkipForward className="h-6 w-6 sm:h-7 sm:w-7" />
             </Button>
             
             <Button
-              size="lg"
+              size="icon"
               variant="ghost"
               onClick={toggleRepeat}
-              className={repeat !== "off" ? "text-primary" : ""}
+              className={repeat !== "off" ? "text-primary" : "text-muted-foreground"}
             >
               {repeat === "one" ? (
                 <Repeat1 className="h-5 w-5" />
@@ -176,22 +188,30 @@ export default function NowPlaying() {
             </Button>
           </div>
 
-          {/* Volume */}
-          <div className="flex items-center gap-3 w-64">
-            <Volume2 className="h-5 w-5 text-muted-foreground" />
-            <Slider
-              value={[volume * 100]}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={(value) => setVolume(value[0] / 100)}
-              className="flex-1"
-            />
-          </div>
-        </div>
+          {/* Secondary Controls */}
+          <div className="flex items-center justify-between px-4">
+            <Button variant="ghost" size="icon">
+              <Heart className="h-5 w-5" />
+            </Button>
 
-        {/* Queue Button */}
-        <Sheet open={queueOpen} onOpenChange={setQueueOpen}>
+            <div className="flex items-center gap-2 flex-1 max-w-xs mx-4">
+              <Volume2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <Slider
+                value={[volume * 100]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(value) => setVolume(value[0] / 100)}
+                className="flex-1"
+              />
+            </div>
+
+            <Sheet open={queueOpen} onOpenChange={setQueueOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <List className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
           <SheetTrigger asChild>
             <Button variant="outline" className="gap-2">
               <List className="h-4 w-4" />
@@ -253,8 +273,14 @@ export default function NowPlaying() {
             </div>
           </SheetContent>
         </Sheet>
+          </div>
+
+          {/* Audio Visualizer */}
+          <div className="px-4 mt-6">
+            <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
+          </div>
+        </div>
       </div>
     </div>
-    </>
   );
 }
