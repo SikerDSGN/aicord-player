@@ -12,6 +12,7 @@ import Pending from "./pages/Pending";
 import Library from "./pages/Library";
 import Favorites from "./pages/Favorites";
 import Playlists from "./pages/Playlists";
+import PlaylistDetail from "./pages/PlaylistDetail";
 import Users from "./pages/admin/Users";
 import Upload from "./pages/admin/Upload";
 import NotFound from "./pages/NotFound";
@@ -55,6 +56,17 @@ const App = () => (
                   <ProtectedRoute allowedRoles={["admin", "listener"]}>
                     <Layout>
                       <Playlists />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/playlist/:id"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "listener"]}>
+                    <Layout>
+                      <PlaylistDetail />
                     </Layout>
                   </ProtectedRoute>
                 }
