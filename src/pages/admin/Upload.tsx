@@ -18,6 +18,8 @@ export default function Upload() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [audioInputKey, setAudioInputKey] = useState(0);
+  const [coverInputKey, setCoverInputKey] = useState(0);
 
   const sanitizeFileName = (fileName: string) => {
     // Remove special characters and replace spaces with underscores
@@ -89,6 +91,9 @@ export default function Upload() {
       setTags("");
       setAudioFile(null);
       setCoverFile(null);
+      // Reset file inputs by changing their keys
+      setAudioInputKey((prev) => prev + 1);
+      setCoverInputKey((prev) => prev + 1);
     } catch (error: any) {
       toast.error("Failed to upload song");
       console.error(error);
@@ -154,6 +159,7 @@ export default function Upload() {
             <div className="space-y-2">
               <Label htmlFor="audio">Audio File (MP3/WAV) *</Label>
               <Input
+                key={audioInputKey}
                 id="audio"
                 type="file"
                 accept="audio/mpeg,audio/wav"
@@ -170,6 +176,7 @@ export default function Upload() {
             <div className="space-y-2">
               <Label htmlFor="cover">Cover Image (Optional)</Label>
               <Input
+                key={coverInputKey}
                 id="cover"
                 type="file"
                 accept="image/*"
