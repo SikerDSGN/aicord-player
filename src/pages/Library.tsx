@@ -379,118 +379,211 @@ export default function Library() {
         Hudební knihovna
       </h1>
       
-      <div className="mb-6 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Hledat podle názvu, interpreta..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      <Tabs defaultValue="songs" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="songs" className="gap-2">
+            <Music className="h-4 w-4" />
+            Všechny skladby
+          </TabsTrigger>
+          <TabsTrigger value="playlists" className="gap-2">
+            <ListMusic className="h-4 w-4" />
+            Playlisty
+          </TabsTrigger>
+        </TabsList>
 
-      {filteredSongs.length === 0 && searchQuery && (
-        <div className="text-center py-8">
-          <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-          <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-        {filteredSongs.map((song, index) => {
-          const isCurrentlyPlaying = currentSong?.id === song.id;
+        {/* Songs Tab */}
+        <TabsContent value="songs" className="mt-0">
+          <div className="mb-6 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Hledat podle názvu, interpreta..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {filteredSongs.length === 0 && searchQuery && (
+            <div className="text-center py-8">
+              <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+              <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
+            </div>
+          )}
           
-          return (
-            <Card
-              key={song.id}
-              className={`group overflow-hidden border transition-all hover:shadow-glow hover:scale-105 ${
-                isCurrentlyPlaying 
-                  ? "border-primary shadow-glow-soft bg-gradient-card" 
-                  : "border-border bg-card"
-              }`}
-            >
-              <div className="relative aspect-square overflow-hidden bg-muted">
-                {song.cover_url ? (
-                  <img
-                    src={song.cover_url}
-                    alt={song.title}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
+            {filteredSongs.map((song, index) => {
+              const isCurrentlyPlaying = currentSong?.id === song.id;
+              
+              return (
+                <Card
+                  key={song.id}
+                  className={`group overflow-hidden border transition-all hover:shadow-glow hover:scale-105 ${
+                    isCurrentlyPlaying 
+                      ? "border-primary shadow-glow-soft bg-gradient-card" 
+                      : "border-border bg-card"
+                  }`}
+                >
+                  <div className="relative aspect-square overflow-hidden bg-muted">
+                    {song.cover_url ? (
+                      <img
+                        src={song.cover_url}
+                        alt={song.title}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        size="lg"
+                        variant="glow"
+                        className="h-12 w-12 md:h-14 md:w-14 rounded-full"
+                        onClick={() => handlePlaySong(song, index)}
+                      >
+                        <Play className="h-5 w-5 md:h-6 md:w-6" />
+                      </Button>
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(song.id);
+                        }}
+                      >
+                        <Heart 
+                          className={`h-4 w-4 ${
+                            favorites.has(song.id)
+                              ? "fill-primary text-primary"
+                              : "text-white"
+                          }`}
+                        />
+                      </Button>
+                      {userRole === "admin" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-primary/80"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditDialog(song);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4 text-white" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSongToDelete(song.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-white" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button
-                    size="lg"
-                    variant="glow"
-                    className="h-12 w-12 md:h-14 md:w-14 rounded-full"
-                    onClick={() => handlePlaySong(song, index)}
-                  >
-                    <Play className="h-5 w-5 md:h-6 md:w-6" />
-                  </Button>
-                </div>
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(song.id);
-                    }}
-                  >
-                    <Heart 
-                      className={`h-4 w-4 ${
-                        favorites.has(song.id)
-                          ? "fill-primary text-primary"
-                          : "text-white"
-                      }`}
-                    />
-                  </Button>
-                  {userRole === "admin" && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-primary/80"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditDialog(song);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 text-white" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSongToDelete(song.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-white" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-              <CardContent className="p-3 md:p-4">
-                <h3 className={`font-semibold truncate text-sm md:text-base ${
-                  isCurrentlyPlaying ? "text-primary" : "text-foreground"
-                }`}>
-                  {song.title}
-                </h3>
-                <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  <CardContent className="p-3 md:p-4">
+                    <h3 className={`font-semibold truncate text-sm md:text-base ${
+                      isCurrentlyPlaying ? "text-primary" : "text-foreground"
+                    }`}>
+                      {song.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
 
+        {/* Playlists Tab */}
+        <TabsContent value="playlists" className="mt-0">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Vaše playlisty</h2>
+            {user && (
+              <Button onClick={() => setShowCreatePlaylistDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nový playlist
+              </Button>
+            )}
+          </div>
+
+          {playlistsLoading ? (
+            <LoadingGrid count={6} type="playlist" />
+          ) : playlists.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <ListMusic className="h-16 w-16 text-muted-foreground opacity-50 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Žádné playlisty</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                {user ? "Vytvořte svůj první playlist" : "Přihlaste se pro vytvoření playlistu"}
+              </p>
+              {user && (
+                <Button onClick={() => setShowCreatePlaylistDialog(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Vytvořit playlist
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {playlists.map((playlist) => (
+                <Card key={playlist.id} className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow">
+                  <Link to={`/playlist/${playlist.id}`}>
+                    <div className="relative aspect-video overflow-hidden bg-muted">
+                      {playlist.cover_url ? (
+                        <img
+                          src={playlist.cover_url}
+                          alt={playlist.name}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <ListMusic className="h-16 w-16 text-muted-foreground opacity-30" />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link to={`/playlist/${playlist.id}`} className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{playlist.name}</h3>
+                        {playlist.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                            {playlist.description}
+                          </p>
+                        )}
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedPlaylist(playlist);
+                          setShareDialogOpen(true);
+                        }}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Delete Song Dialog */}
       <AlertDialog open={!!songToDelete} onOpenChange={() => setSongToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -511,6 +604,7 @@ export default function Library() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Edit Song Dialog */}
       <Dialog open={!!editingSong} onOpenChange={() => setEditingSong(null)}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -578,6 +672,65 @@ export default function Library() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Playlist Dialog */}
+      <Dialog open={showCreatePlaylistDialog} onOpenChange={setShowCreatePlaylistDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vytvořit nový playlist</DialogTitle>
+            <DialogDescription>
+              Vytvořte playlist pro organizaci vaší hudby
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="playlist-name">Název *</Label>
+              <Input
+                id="playlist-name"
+                placeholder="Můj playlist"
+                value={newPlaylist.name}
+                onChange={(e) => setNewPlaylist({ ...newPlaylist, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="playlist-description">Popis</Label>
+              <Textarea
+                id="playlist-description"
+                placeholder="Popis playlistu..."
+                value={newPlaylist.description}
+                onChange={(e) => setNewPlaylist({ ...newPlaylist, description: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="playlist-cover">Obrázek</Label>
+              <Input
+                id="playlist-cover"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPlaylistCoverFile(e.target.files?.[0] || null)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreatePlaylistDialog(false)}>
+              Zrušit
+            </Button>
+            <Button onClick={handleCreatePlaylist} disabled={creatingPlaylist}>
+              {creatingPlaylist ? "Vytváření..." : "Vytvořit"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Playlist Dialog */}
+      {selectedPlaylist && (
+        <SharePlaylistDialog
+          playlistId={selectedPlaylist.id}
+          playlistName={selectedPlaylist.name}
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+        />
+      )}
     </div>
   );
 }
