@@ -92,10 +92,10 @@ export function AudioPlayer() {
                 max={duration || 100}
                 step={1}
                 onValueChange={(value) => seekTo(value[0])}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               />
               <span className="text-xs text-muted-foreground w-10">
-                {formatTime(duration)}
+                -{formatTime(duration - currentTime)}
               </span>
             </div>
           </div>

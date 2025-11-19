@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Play, Music, Search, Heart, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingGrid } from "@/components/LoadingSkeletons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -263,17 +264,10 @@ export default function Library() {
   if (loading) {
     return (
       <div className="container py-6 md:py-8 px-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-          {[...Array(10)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="aspect-square bg-muted"></div>
-              <CardContent className="p-3 md:p-4">
-                <div className="h-4 bg-muted rounded mb-2"></div>
-                <div className="h-3 bg-muted rounded w-2/3"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-foreground">
+          Knihovna
+        </h1>
+        <LoadingGrid count={10} type="song" />
       </div>
     );
   }
