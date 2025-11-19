@@ -76,12 +76,8 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
       // @ts-ignore - TypeScript issue with Uint8Array types
       analyser.getByteFrequencyData(dataArray);
 
-      // Clear with gradient background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, "rgba(15, 23, 42, 0.3)");
-      gradient.addColorStop(1, "rgba(30, 41, 59, 0.3)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Clear with transparent background
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw multiple waveform layers
       const layers = 3;
@@ -136,7 +132,7 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
   }, [isPlaying]);
 
   return (
-    <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gradient-to-br from-background/50 to-muted/50 backdrop-blur-sm border border-border/50">
+    <div className="relative w-full h-full">
       <canvas
         ref={canvasRef}
         width={800}
@@ -144,7 +140,7 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
         className="w-full h-full"
       />
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-lg">
           <p className="text-sm text-muted-foreground">Audio vizualizér - zahraj skladbu</p>
         </div>
       )}

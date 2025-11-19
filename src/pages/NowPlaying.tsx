@@ -154,7 +154,7 @@ export default function NowPlaying() {
 
       {/* Main Content - Centered like YouTube Music */}
       <div className="container max-w-4xl mx-auto px-4 py-6 sm:py-12 flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)]">
-        {/* Album Art */}
+        {/* Album Art with Visualizer Overlay */}
         <div className="relative mb-8 animate-fade-in">
           <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 hover-scale transition-smooth">
             {currentSong.cover_url ? (
@@ -168,6 +168,11 @@ export default function NowPlaying() {
                 <Music className="h-32 w-32 text-primary opacity-30" />
               </div>
             )}
+            
+            {/* Visualizer Overlay */}
+            <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-60">
+              <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
+            </div>
           </div>
         </div>
 
@@ -335,10 +340,6 @@ export default function NowPlaying() {
         </Sheet>
           </div>
 
-          {/* Audio Visualizer */}
-          <div className="px-4 mt-6">
-            <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
-          </div>
         </div>
       </div>
     </div>
