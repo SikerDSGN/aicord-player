@@ -101,6 +101,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (currentSong && audioRef.current) {
       const audio = audioRef.current;
       console.log("Setting audio source:", currentSong.audio_url);
+      console.log("Current song data:", currentSong);
+      
+      // Reset audio state
+      audio.pause();
+      audio.currentTime = 0;
       audio.src = currentSong.audio_url;
       
       // Wait for audio to be loaded before playing
@@ -115,16 +120,37 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       };
       
       const handleError = (e: Event) => {
-        console.error("Audio error:", e);
+        console.error("Audio error event:", e);
+        console.error("Audio error details:", {
+          src: audio.src,
+          error: audio.error,
+          networkState: audio.networkState,
+          readyState: audio.readyState
+        });
+        setIsPlaying(false);
+      };
+      
+      const handleLoadStart = () => {
+        console.log("Audio load started");
+      };
+      
+      const handleLoadedData = () => {
+        console.log("Audio data loaded successfully");
       };
       
       audio.addEventListener('canplay', handleCanPlay, { once: true });
       audio.addEventListener('error', handleError);
+      audio.addEventListener('loadstart', handleLoadStart);
+      audio.addEventListener('loadeddata', handleLoadedData);
+      
+      // Load the audio
       audio.load();
       
       return () => {
         audio.removeEventListener('canplay', handleCanPlay);
         audio.removeEventListener('error', handleError);
+        audio.removeEventListener('loadstart', handleLoadStart);
+        audio.removeEventListener('loadeddata', handleLoadedData);
       };
     }
   }, [currentSong]);
