@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, Music, Search, Heart, Trash2, Pencil, Plus, ListMusic, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SharePlaylistDialog } from "@/components/SharePlaylistDialog";
 import {
   AlertDialog,
@@ -75,8 +75,13 @@ export default function Library() {
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { playSong, playQueue, currentSong } = usePlayer();
+  const { playSong, playQueue, currentSong, togglePlay, isPlaying, setNavigate } = usePlayer();
   const { user, userRole } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate, setNavigate]);
 
   useEffect(() => {
     fetchSongs();
@@ -185,7 +190,12 @@ export default function Library() {
   };
 
   const handlePlaySong = (song: Song, index: number) => {
-    playQueue(songs, index);
+    // If clicking on currently playing song, just toggle play/pause
+    if (currentSong?.id === song.id) {
+      togglePlay();
+    } else {
+      playQueue(filteredSongs, index);
+    }
   };
 
   const fetchFavorites = async () => {
