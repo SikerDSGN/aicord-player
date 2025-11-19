@@ -8,6 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import aicordLogo from "@/assets/aicord-logo.png";
+import { z } from "zod";
+
+const signUpSchema = z.object({
+  email: z.string().trim().email("Neplatná emailová adresa").max(255, "Email je příliš dlouhý"),
+  password: z.string().min(8, "Heslo musí mít alespoň 8 znaků").max(128, "Heslo je příliš dlouhé"),
+  fullName: z.string().trim().min(1, "Jméno je povinné").max(100, "Jméno je příliš dlouhé")
+});
+
+const signInSchema = z.object({
+  email: z.string().trim().email("Neplatná emailová adresa").max(255, "Email je příliš dlouhý"),
+  password: z.string().min(1, "Heslo je povinné")
+});
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -18,15 +30,23 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    const result = signUpSchema.safeParse({ email, password, fullName });
+    if (!result.success) {
+      toast.error(result.error.errors[0].message);
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: result.data.email,
+        password: result.data.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: result.data.fullName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -45,12 +65,20 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    const result = signInSchema.safeParse({ email, password });
+    if (!result.success) {
+      toast.error(result.error.errors[0].message);
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: result.data.email,
+        password: result.data.password,
       });
 
       if (error) throw error;
