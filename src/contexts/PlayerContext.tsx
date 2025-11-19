@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Song {
   id: string;
@@ -28,6 +29,7 @@ interface PlayerContextType {
   playPrevious: () => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
+  setNavigate: (navigate: (path: string) => void) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -44,6 +46,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [repeat, setRepeat] = useState<"off" | "all" | "one">("off");
   const [originalQueue, setOriginalQueue] = useState<Song[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const navigateRef = useRef<((path: string) => void) | null>(null);
+
+  // Store navigate function from any child component that has it
+  const setNavigate = (navigate: (path: string) => void) => {
+    navigateRef.current = navigate;
+  };
 
   useEffect(() => {
     const audio = new Audio();
@@ -102,6 +110,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setQueue([song]);
     setCurrentIndex(0);
     setIsPlaying(true);
+    // Navigate to now-playing page
+    if (navigateRef.current) {
+      navigateRef.current("/now-playing");
+    }
   };
 
   const playQueue = (songs: Song[], startIndex: number) => {
@@ -110,6 +122,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setCurrentIndex(startIndex);
     setCurrentSong(songs[startIndex]);
     setIsPlaying(true);
+    // Navigate to now-playing page
+    if (navigateRef.current) {
+      navigateRef.current("/now-playing");
+    }
   };
 
   const togglePlay = () => {
@@ -208,6 +224,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         playPrevious,
         toggleShuffle,
         toggleRepeat,
+        setNavigate,
       }}
     >
       {children}
