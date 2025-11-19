@@ -1,8 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Music, Library, ListMusic, Users, Upload, LogOut, Menu, X, Heart } from "lucide-react";
-import { AudioPlayer } from "./AudioPlayer";
+import { Library, Users, Upload, LogOut, Menu, X, Heart } from "lucide-react";
 import aicordLogo from "@/assets/aicord-logo.png";
 import { useState } from "react";
 
@@ -24,17 +23,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           />
           <div className="fixed top-16 left-0 right-0 bottom-0 bg-card border-t border-border z-[101] md:hidden overflow-y-auto">
             <nav className="container flex flex-col gap-2 p-4">
-              <Link to="/now-playing" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant={isActive("/now-playing") ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <Music className="mr-2 h-4 w-4" />
-                  Přehrávač
-                </Button>
-              </Link>
-
               <Link to="/" onClick={() => setMobileMenuOpen(false)}>
                 <Button
                   variant={isActive("/") ? "default" : "ghost"}
@@ -109,18 +97,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-2">
-            <Link to="/now-playing">
-              <Button
-                variant={isActive("/now-playing") ? "default" : "ghost"}
-                size="sm"
-              >
-                <Music className="mr-2 h-4 w-4" />
-                Přehrávač
-              </Button>
-            </Link>
-
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
             <Link to="/">
               <Button
                 variant={isActive("/") ? "default" : "ghost"}
@@ -182,11 +160,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 pb-24">
+        <main className="flex-1">
           {children}
         </main>
-
-        <AudioPlayer />
       </div>
     </>
   );

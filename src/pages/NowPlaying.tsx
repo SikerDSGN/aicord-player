@@ -80,10 +80,15 @@ export default function NowPlaying() {
       {/* Header - YouTube Music Style */}
       <header className="sticky top-0 z-10 bg-gradient-to-b from-background/95 to-transparent backdrop-blur-md border-b border-border/20">
         <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <ChevronDown className="h-6 w-6" />
-            <span className="text-sm sm:text-base">Zpět</span>
-          </Link>
+            <span className="text-sm sm:text-base">Minimalizovat</span>
+          </Button>
 
           <div className="flex items-center gap-2">
             <img src={aicordLogo} alt="Aicord" className="h-7 sm:h-8 w-auto opacity-80" />
