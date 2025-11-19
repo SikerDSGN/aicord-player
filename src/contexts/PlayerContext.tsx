@@ -55,30 +55,41 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const audio = new Audio();
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
     audioRef.current = audio;
 
-    audio.addEventListener("timeupdate", () => {
+    const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
-    });
+    };
 
-    audio.addEventListener("loadedmetadata", () => {
+    const handleLoadedMetadata = () => {
+      console.log("Audio metadata loaded, duration:", audio.duration);
       setDuration(audio.duration);
-    });
+    };
 
-    audio.addEventListener("ended", () => {
+    const handleEnded = () => {
+      console.log("Audio ended");
       if (repeat === "one") {
         seekTo(0);
         setIsPlaying(true);
       } else {
         playNext();
       }
-    });
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.src = "";
     };
-  }, []);
+  }, [repeat]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -89,10 +100,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (currentSong && audioRef.current) {
       const audio = audioRef.current;
+      console.log("Setting audio source:", currentSong.audio_url);
       audio.src = currentSong.audio_url;
       
       // Wait for audio to be loaded before playing
       const handleCanPlay = () => {
+        console.log("Audio can play, isPlaying:", isPlaying);
         if (isPlaying) {
           audio.play().catch((error) => {
             console.error("Error playing audio:", error);
@@ -101,29 +114,39 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         }
       };
       
+      const handleError = (e: Event) => {
+        console.error("Audio error:", e);
+      };
+      
       audio.addEventListener('canplay', handleCanPlay, { once: true });
+      audio.addEventListener('error', handleError);
       audio.load();
       
       return () => {
         audio.removeEventListener('canplay', handleCanPlay);
+        audio.removeEventListener('error', handleError);
       };
     }
-  }, [currentSong]);
+  }, [currentSong, isPlaying]);
 
   useEffect(() => {
     if (audioRef.current && currentSong) {
       const audio = audioRef.current;
       
+      console.log("isPlaying changed to:", isPlaying);
       if (isPlaying) {
-        audio.play().catch((error) => {
-          console.error("Error playing audio:", error);
-          setIsPlaying(false);
-        });
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.error("Error playing audio:", error);
+            setIsPlaying(false);
+          });
+        }
       } else {
         audio.pause();
       }
     }
-  }, [isPlaying]);
+  }, [isPlaying, currentSong]);
 
   const playSong = (song: Song) => {
     console.log("Playing song:", song.title);
