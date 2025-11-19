@@ -30,7 +30,7 @@ export function AudioPlayer() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-card shadow-glow">
+    <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated">
       <div className="container px-4 py-3">
         <div className="flex items-center gap-4">
           {/* Song Info */}
@@ -39,11 +39,11 @@ export function AudioPlayer() {
               <img
                 src={currentSong.cover_url}
                 alt={currentSong.title}
-                className="h-12 w-12 rounded object-cover"
+                className="h-12 w-12 rounded-lg object-cover shadow-glow-soft hover-scale"
               />
             )}
-            <div className="min-w-0">
-              <p className="font-semibold truncate">{currentSong.title}</p>
+            <div className="min-w-0 animate-fade-in-fast">
+              <p className="font-semibold truncate text-foreground">{currentSong.title}</p>
               <p className="text-sm text-muted-foreground truncate">{currentSong.artist}</p>
             </div>
           </div>
@@ -62,8 +62,8 @@ export function AudioPlayer() {
               <Button size="sm" variant="ghost" onClick={playPrevious}>
                 <SkipBack className="h-4 w-4" />
               </Button>
-              <Button size="sm" onClick={togglePlay} className="h-9 w-9 rounded-full neon-glow">
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              <Button size="sm" onClick={togglePlay} className="h-10 w-10 rounded-full bg-gradient-primary shadow-glow-soft hover:shadow-glow hover:scale-110 transition-smooth">
+                {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
               </Button>
               <Button size="sm" variant="ghost" onClick={playNext}>
                 <SkipForward className="h-4 w-4" />

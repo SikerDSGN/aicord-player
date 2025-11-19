@@ -20,6 +20,7 @@ All colors MUST be HSL.
 
     --primary: 142 85% 55%;
     --primary-foreground: 0 0% 5%;
+    --primary-glow: 142 85% 65%;
 
     --secondary: 0 0% 12%;
     --secondary-foreground: 142 85% 55%;
@@ -39,13 +40,22 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Gradients */
+    /* Rich Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(142 85% 45%), hsl(142 85% 65%));
+    --gradient-primary-soft: linear-gradient(135deg, hsl(142 70% 40%), hsl(142 70% 60%));
     --gradient-dark: linear-gradient(180deg, hsl(0 0% 5%), hsl(0 0% 2%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 6%) 100%);
+    --gradient-hover: linear-gradient(135deg, hsl(142 85% 50%), hsl(142 85% 70%));
     
-    /* Shadows and glows */
+    /* Elegant Shadows and glows */
     --shadow-glow: 0 0 30px hsl(142 85% 55% / 0.4), 0 0 60px hsl(142 85% 55% / 0.2);
+    --shadow-glow-soft: 0 0 20px hsl(142 85% 55% / 0.3);
     --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.6);
+    --shadow-elevated: 0 12px 40px hsl(0 0% 0% / 0.8), 0 0 1px hsl(142 85% 55% / 0.3);
+    
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -65,6 +75,7 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Fade Animations */
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in;
   }
@@ -80,6 +91,22 @@ All colors MUST be HSL.
     }
   }
 
+  .animate-fade-in-fast {
+    animation: fadeInFast 0.3s ease-out;
+  }
+
+  @keyframes fadeInFast {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Slide Animations */
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
   }
@@ -95,6 +122,52 @@ All colors MUST be HSL.
     }
   }
 
+  .animate-slide-in {
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Scale Animations */
+  .animate-scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Pulse Animation */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(142 85% 55% / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(142 85% 55% / 0.6);
+    }
+  }
+
+  /* Gradients */
   .bg-gradient-dark {
     background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(0 0% 2%) 100%);
   }
@@ -103,11 +176,63 @@ All colors MUST be HSL.
     background: linear-gradient(135deg, hsl(142 85% 45%) 0%, hsl(142 85% 65%) 100%);
   }
 
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .bg-gradient-hover {
+    background: var(--gradient-hover);
+  }
+
+  /* Glows and Shadows */
   .neon-glow {
     box-shadow: 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary) / 0.5);
   }
 
+  .neon-glow-soft {
+    box-shadow: var(--shadow-glow-soft);
+  }
+
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Interactive Effects */
+  .hover-lift {
+    transition: var(--transition-smooth);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .hover-glow {
+    transition: var(--transition-smooth);
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .hover-scale {
+    transition: var(--transition-fast);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-fast {
+    transition: var(--transition-fast);
   }
 }
