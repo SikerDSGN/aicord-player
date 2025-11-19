@@ -5,8 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Play, Music, Search, Heart } from "lucide-react";
+import { Play, Music, Search, Heart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Song {
   id: string;
@@ -23,8 +33,9 @@ export default function Library() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const { playSong, playQueue } = usePlayer();
-  const { user } = useAuth();
+  const [songToDelete, setSongToDelete] = useState<string | null>(null);
+  const { playSong, playQueue, currentSong } = usePlayer();
+  const { user, userRole } = useAuth();
 
   useEffect(() => {
     fetchSongs();
@@ -126,6 +137,25 @@ export default function Library() {
     }
   };
 
+  const handleDeleteSong = async (songId: string) => {
+    try {
+      const { error } = await supabase
+        .from("songs")
+        .delete()
+        .eq("id", songId);
+
+      if (error) throw error;
+
+      setSongs((prev) => prev.filter((s) => s.id !== songId));
+      setFilteredSongs((prev) => prev.filter((s) => s.id !== songId));
+      toast.success("Skladba byla smazána");
+      setSongToDelete(null);
+    } catch (error: any) {
+      toast.error("Nepodařilo se smazat skladbu");
+      console.error(error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container py-6 md:py-8 px-4">
@@ -160,7 +190,7 @@ export default function Library() {
 
   return (
     <div className="container py-6 md:py-8 px-4">
-      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-foreground">
         Hudební knihovna
       </h1>
       
@@ -171,7 +201,7 @@ export default function Library() {
           placeholder="Hledat podle názvu, interpreta..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 neon-glow"
+          className="pl-10"
         />
       </div>
 
@@ -183,57 +213,105 @@ export default function Library() {
       )}
       
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-        {filteredSongs.map((song, index) => (
-          <Card
-            key={song.id}
-            className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow hover:scale-105"
-          >
-            <div className="relative aspect-square overflow-hidden bg-muted">
-              {song.cover_url ? (
-                <img
-                  src={song.cover_url}
-                  alt={song.title}
-                  className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
+        {filteredSongs.map((song, index) => {
+          const isCurrentlyPlaying = currentSong?.id === song.id;
+          
+          return (
+            <Card
+              key={song.id}
+              className={`group overflow-hidden border transition-all hover:shadow-glow hover:scale-105 ${
+                isCurrentlyPlaying 
+                  ? "border-primary shadow-glow-soft bg-gradient-card" 
+                  : "border-border bg-card"
+              }`}
+            >
+              <div className="relative aspect-square overflow-hidden bg-muted">
+                {song.cover_url ? (
+                  <img
+                    src={song.cover_url}
+                    alt={song.title}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Button
+                    size="lg"
+                    variant="glow"
+                    className="h-12 w-12 md:h-14 md:w-14 rounded-full"
+                    onClick={() => handlePlaySong(song, index)}
+                  >
+                    <Play className="h-5 w-5 md:h-6 md:w-6" />
+                  </Button>
                 </div>
-              )}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  size="lg"
-                  className="h-12 w-12 md:h-14 md:w-14 rounded-full neon-glow"
-                  onClick={() => handlePlaySong(song, index)}
-                >
-                  <Play className="h-5 w-5 md:h-6 md:w-6" />
-                </Button>
+                <div className="absolute top-2 right-2 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(song.id);
+                    }}
+                  >
+                    <Heart 
+                      className={`h-4 w-4 ${
+                        favorites.has(song.id)
+                          ? "fill-primary text-primary"
+                          : "text-white"
+                      }`}
+                    />
+                  </Button>
+                  {userRole === "admin" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSongToDelete(song.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-white" />
+                    </Button>
+                  )}
+                </div>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite(song.id);
-                }}
-              >
-                <Heart 
-                  className={`h-4 w-4 ${
-                    favorites.has(song.id)
-                      ? "fill-primary text-primary"
-                      : "text-white"
-                  }`}
-                />
-              </Button>
-            </div>
-            <CardContent className="p-3 md:p-4">
-              <h3 className="font-semibold truncate text-sm md:text-base">{song.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <CardContent className="p-3 md:p-4">
+                <h3 className={`font-semibold truncate text-sm md:text-base ${
+                  isCurrentlyPlaying ? "text-primary" : "text-foreground"
+                }`}>
+                  {song.title}
+                </h3>
+                <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      <AlertDialog open={!!songToDelete} onOpenChange={() => setSongToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Smazat skladbu?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Skladba bude trvale smazána z knihovny.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušit</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => songToDelete && handleDeleteSong(songToDelete)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

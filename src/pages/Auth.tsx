@@ -69,7 +69,7 @@ export default function Auth() {
       <Card className="w-full max-w-md border-border/50 shadow-elevated animate-scale-in">
         <CardHeader className="space-y-1 text-center">
           <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 md:h-20 mb-4 hover-scale" />
-          <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-primary">
             Aicord PLAYER
           </CardTitle>
           <CardDescription className="text-muted-foreground">

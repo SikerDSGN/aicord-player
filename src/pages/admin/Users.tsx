@@ -87,7 +87,7 @@ export default function Users() {
 
   return (
     <div className="container py-6 md:py-8 px-4">
-      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+      <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-foreground">
         Správa uživatelů
       </h1>
 

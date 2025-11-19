@@ -4,7 +4,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-dark">
       <div className="text-center animate-fade-in">
-        <h1 className="mb-4 text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <h1 className="mb-4 text-4xl font-bold text-primary">
           Welcome to Your Blank App
         </h1>
         <p className="text-xl text-muted-foreground animate-fade-in-fast">
