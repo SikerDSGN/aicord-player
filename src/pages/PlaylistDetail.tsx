@@ -53,7 +53,7 @@ export default function PlaylistDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { playQueue, currentSong } = usePlayer();
+  const { playQueue, currentSong, togglePlay, isPlaying, setNavigate } = usePlayer();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
   const [allSongs, setAllSongs] = useState<Song[]>([]);
@@ -61,6 +61,10 @@ export default function PlaylistDetail() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [trackToDelete, setTrackToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate, setNavigate]);
 
   useEffect(() => {
     if (id) {
@@ -125,7 +129,14 @@ export default function PlaylistDetail() {
 
   const handlePlaySong = (index: number) => {
     const songs = tracks.map((t) => t.songs);
-    playQueue(songs, index);
+    const song = songs[index];
+    
+    // If clicking on currently playing song, just toggle play/pause
+    if (currentSong?.id === song.id) {
+      togglePlay();
+    } else {
+      playQueue(songs, index);
+    }
   };
 
   const handleAddSong = async (songId: string) => {

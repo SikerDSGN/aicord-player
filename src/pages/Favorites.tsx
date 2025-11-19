@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play, Pause, Music, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
+import { useNavigate } from "react-router-dom";
 
 interface Song {
   id: string;
@@ -20,8 +21,13 @@ interface Song {
 export default function Favorites() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  const { playQueue, currentSong } = usePlayer();
+  const { playQueue, currentSong, togglePlay, isPlaying, setNavigate } = usePlayer();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate, setNavigate]);
 
   useEffect(() => {
     if (user) {
@@ -78,7 +84,12 @@ export default function Favorites() {
   };
 
   const handlePlaySong = (song: Song, index: number) => {
-    playQueue(songs, index);
+    // If clicking on currently playing song, just toggle play/pause
+    if (currentSong?.id === song.id) {
+      togglePlay();
+    } else {
+      playQueue(songs, index);
+    }
   };
 
   if (loading) {
