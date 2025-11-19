@@ -88,35 +88,58 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (currentSong && audioRef.current) {
-      audioRef.current.src = currentSong.audio_url;
-      if (isPlaying) {
-        audioRef.current.play();
-      }
+      const audio = audioRef.current;
+      audio.src = currentSong.audio_url;
+      
+      // Wait for audio to be loaded before playing
+      const handleCanPlay = () => {
+        if (isPlaying) {
+          audio.play().catch((error) => {
+            console.error("Error playing audio:", error);
+            setIsPlaying(false);
+          });
+        }
+      };
+      
+      audio.addEventListener('canplay', handleCanPlay, { once: true });
+      audio.load();
+      
+      return () => {
+        audio.removeEventListener('canplay', handleCanPlay);
+      };
     }
   }, [currentSong]);
 
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && currentSong) {
+      const audio = audioRef.current;
+      
       if (isPlaying) {
-        audioRef.current.play();
+        audio.play().catch((error) => {
+          console.error("Error playing audio:", error);
+          setIsPlaying(false);
+        });
       } else {
-        audioRef.current.pause();
+        audio.pause();
       }
     }
   }, [isPlaying]);
 
   const playSong = (song: Song) => {
+    console.log("Playing song:", song.title);
     setCurrentSong(song);
     setQueue([song]);
     setCurrentIndex(0);
     setIsPlaying(true);
     // Navigate to now-playing page
     if (navigateRef.current) {
+      console.log("Navigating to /now-playing");
       navigateRef.current("/now-playing");
     }
   };
 
   const playQueue = (songs: Song[], startIndex: number) => {
+    console.log("Playing queue, starting at:", songs[startIndex]?.title);
     setQueue(songs);
     setOriginalQueue(songs);
     setCurrentIndex(startIndex);
@@ -124,6 +147,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(true);
     // Navigate to now-playing page
     if (navigateRef.current) {
+      console.log("Navigating to /now-playing");
       navigateRef.current("/now-playing");
     }
   };
