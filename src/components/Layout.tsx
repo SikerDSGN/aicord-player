@@ -45,17 +45,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   Knihovna
                 </Button>
               </Link>
-            
-              <Link to="/playlists" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant={isActive("/playlists") ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <ListMusic className="mr-2 h-4 w-4" />
-                  Playlisty
-                </Button>
-              </Link>
 
               <Link to="/favorites" onClick={() => setMobileMenuOpen(false)}>
                 <Button
@@ -139,16 +128,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               >
                 <Library className="mr-2 h-4 w-4" />
                 Knihovna
-              </Button>
-            </Link>
-            
-            <Link to="/playlists">
-              <Button
-                variant={isActive("/playlists") ? "default" : "ghost"}
-                size="sm"
-              >
-                <ListMusic className="mr-2 h-4 w-4" />
-                Playlisty
               </Button>
             </Link>
 
