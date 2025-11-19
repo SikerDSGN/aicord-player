@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Music, Search, Heart, Trash2, Pencil, Plus, ListMusic, Share2 } from "lucide-react";
+import { Play, Pause, Music, Search, Heart, Trash2, Pencil, Plus, ListMusic, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
 import { Link } from "react-router-dom";
@@ -443,7 +443,11 @@ export default function Library() {
                         className="h-12 w-12 md:h-14 md:w-14 rounded-full"
                         onClick={() => handlePlaySong(song, index)}
                       >
-                        <Play className="h-5 w-5 md:h-6 md:w-6" />
+                        {isCurrentlyPlaying ? (
+                          <Pause className="h-5 w-5 md:h-6 md:w-6" />
+                        ) : (
+                          <Play className="h-5 w-5 md:h-6 md:w-6" />
+                        )}
                       </Button>
                     </div>
                     <div className="absolute top-2 right-2 flex gap-2">
