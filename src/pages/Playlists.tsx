@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ListMusic, Music, Plus } from "lucide-react";
+import { Play, Plus, Music2, FileMusic, Share2, ListMusic } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { LoadingGrid } from "@/components/LoadingSkeletons";
+import { SharePlaylistDialog } from "@/components/SharePlaylistDialog";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +32,8 @@ export default function Playlists() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [newPlaylist, setNewPlaylist] = useState({
     name: "",
     description: "",
@@ -117,8 +121,11 @@ export default function Playlists() {
 
   if (loading) {
     return (
-      <div className="container py-8">
-        <p className="text-center text-muted-foreground">Loading playlists...</p>
+      <div className="container py-6 md:py-8 px-4">
+        <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-foreground">
+          Playlisty
+        </h1>
+        <LoadingGrid count={6} type="playlist" />
       </div>
     );
   }
@@ -233,8 +240,8 @@ export default function Playlists() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {playlists.map((playlist) => (
-          <Link key={playlist.id} to={`/playlist/${playlist.id}`}>
-            <Card className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow hover:scale-105">
+          <Card key={playlist.id} className="group overflow-hidden border-border bg-card transition-all hover:shadow-glow">
+            <Link to={`/playlist/${playlist.id}`}>
               <div className="relative aspect-video overflow-hidden bg-muted">
                 {playlist.cover_url ? (
                   <img
@@ -248,16 +255,32 @@ export default function Playlists() {
                   </div>
                 )}
               </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg">{playlist.name}</h3>
+            </Link>
+            <CardContent className="p-4">
+              <Link to={`/playlist/${playlist.id}`}>
+                <h3 className="font-semibold text-lg hover:text-primary transition-colors">{playlist.name}</h3>
                 {playlist.description && (
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                     {playlist.description}
                   </p>
                 )}
-              </CardContent>
-            </Card>
-          </Link>
+              </Link>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    setSelectedPlaylist(playlist);
+                    setShareDialogOpen(true);
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                  Sdílet
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
@@ -324,6 +347,15 @@ export default function Playlists() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {selectedPlaylist && (
+        <SharePlaylistDialog
+          playlistId={selectedPlaylist.id}
+          playlistName={selectedPlaylist.name}
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+        />
+      )}
     </div>
   );
 }
