@@ -67,6 +67,8 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
     const analyser = analyserRef.current;
     const dataArray = dataArrayRef.current;
     const bufferLength = dataArray.length;
+    
+    let phase = 0;
 
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
@@ -81,29 +83,47 @@ export function AudioVisualizer({ audioElement, isPlaying }: AudioVisualizerProp
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let x = 0;
+      // Draw multiple waveform layers
+      const layers = 3;
+      for (let layer = 0; layer < layers; layer++) {
+        ctx.beginPath();
+        ctx.lineWidth = 3 - layer * 0.5;
+        
+        const hue = (phase + layer * 60) % 360;
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, `hsla(${hue}, 80%, 60%, ${0.8 - layer * 0.2})`);
+        gradient.addColorStop(0.5, `hsla(${(hue + 60) % 360}, 80%, 60%, ${0.8 - layer * 0.2})`);
+        gradient.addColorStop(1, `hsla(${(hue + 120) % 360}, 80%, 60%, ${0.8 - layer * 0.2})`);
+        ctx.strokeStyle = gradient;
+        ctx.shadowBlur = 20 - layer * 5;
+        ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.5)`;
 
-      for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
 
-        // Create gradient for each bar
-        const barGradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        barGradient.addColorStop(0, `hsl(${(i / bufferLength) * 360}, 80%, 60%)`);
-        barGradient.addColorStop(1, `hsl(${(i / bufferLength) * 360}, 60%, 40%)`);
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 255.0;
+          const y = (canvas.height / 2) + 
+                    Math.sin(i * 0.05 + phase + layer * 0.5) * 30 * v + 
+                    (v - 0.5) * canvas.height * 0.4 * (1 - layer * 0.2);
 
-        ctx.fillStyle = barGradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
 
-        // Add glow effect
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = `hsl(${(i / bufferLength) * 360}, 80%, 60%)`;
+          x += sliceWidth;
+        }
 
-        x += barWidth + 1;
+        ctx.stroke();
       }
 
       // Reset shadow
       ctx.shadowBlur = 0;
+      
+      // Animate phase for flowing effect
+      phase += 0.03;
     };
 
     draw();
