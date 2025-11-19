@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,10 +17,11 @@ import {
   Music,
   ChevronDown,
   MoreVertical,
-  Heart
+  Heart,
+  Menu
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import aicordLogo from "@/assets/aicord-logo.png";
 
 export default function NowPlaying() {
@@ -42,9 +43,17 @@ export default function NowPlaying() {
     toggleShuffle,
     toggleRepeat,
     playQueue,
+    setNavigate,
   } = usePlayer();
 
+  const navigate = useNavigate();
   const [queueOpen, setQueueOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Register navigate function with PlayerContext
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate, setNavigate]);
 
   if (!currentSong) {
     return (
@@ -80,9 +89,40 @@ export default function NowPlaying() {
             <img src={aicordLogo} alt="Aicord" className="h-7 sm:h-8 w-auto opacity-80" />
           </div>
 
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-64">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="mt-6 flex flex-col gap-2">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start" 
+                  onClick={() => {
+                    navigate("/");
+                    setMenuOpen(false);
+                  }}
+                >
+                  Knihovna
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start" 
+                  onClick={() => {
+                    navigate("/favorites");
+                    setMenuOpen(false);
+                  }}
+                >
+                  Oblíbené
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 

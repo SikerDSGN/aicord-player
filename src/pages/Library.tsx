@@ -5,9 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Play, Music, Search, Heart, Trash2, Pencil } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Play, Music, Search, Heart, Trash2, Pencil, Plus, ListMusic, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
+import { Link } from "react-router-dom";
+import { SharePlaylistDialog } from "@/components/SharePlaylistDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 interface Song {
   id: string;
@@ -38,14 +41,32 @@ interface Song {
   description: string | null;
 }
 
+interface Playlist {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_url: string | null;
+}
+
 export default function Library() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [playlistsLoading, setPlaylistsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [songToDelete, setSongToDelete] = useState<string | null>(null);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
+  const [showCreatePlaylistDialog, setShowCreatePlaylistDialog] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
+  const [newPlaylist, setNewPlaylist] = useState({
+    name: "",
+    description: "",
+  });
+  const [playlistCoverFile, setPlaylistCoverFile] = useState<File | null>(null);
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     artist: "",
@@ -59,6 +80,7 @@ export default function Library() {
 
   useEffect(() => {
     fetchSongs();
+    fetchPlaylists();
     if (user) {
       fetchFavorites();
     }
@@ -94,6 +116,71 @@ export default function Library() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPlaylists = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("playlists")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPlaylists(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setPlaylistsLoading(false);
+    }
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!user || !newPlaylist.name.trim()) {
+      toast.error("Vyplňte název playlistu");
+      return;
+    }
+
+    setCreatingPlaylist(true);
+
+    try {
+      let coverUrl = null;
+
+      if (playlistCoverFile) {
+        const sanitizedCoverName = sanitizeFileName(playlistCoverFile.name);
+        const coverFileName = `${Date.now()}-${sanitizedCoverName}`;
+        const { error: coverError } = await supabase.storage
+          .from("covers")
+          .upload(coverFileName, playlistCoverFile);
+
+        if (coverError) throw coverError;
+
+        const { data: coverData } = supabase.storage
+          .from("covers")
+          .getPublicUrl(coverFileName);
+
+        coverUrl = coverData.publicUrl;
+      }
+
+      const { error } = await supabase.from("playlists").insert({
+        name: newPlaylist.name.trim(),
+        description: newPlaylist.description.trim() || null,
+        cover_url: coverUrl,
+        created_by: user.id,
+      });
+
+      if (error) throw error;
+
+      toast.success("Playlist byl vytvořen");
+      setNewPlaylist({ name: "", description: "" });
+      setPlaylistCoverFile(null);
+      setShowCreatePlaylistDialog(false);
+      fetchPlaylists();
+    } catch (error: any) {
+      toast.error("Nepodařilo se vytvořit playlist");
+      console.error(error);
+    } finally {
+      setCreatingPlaylist(false);
     }
   };
 
