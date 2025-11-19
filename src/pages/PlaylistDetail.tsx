@@ -331,7 +331,7 @@ export default function PlaylistDetail() {
                       onClick={() => handlePlaySong(index)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      {isCurrentlyPlaying ? (
+                      {isCurrentlyPlaying && isPlaying ? (
                         <Pause className="h-4 w-4" />
                       ) : (
                         <Play className="h-4 w-4" />

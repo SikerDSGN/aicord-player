@@ -163,6 +163,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const playQueue = (songs: Song[], startIndex: number) => {
     console.log("Playing queue, starting at:", songs[startIndex]?.title);
+    console.log("navigateRef.current:", navigateRef.current);
     setQueue(songs);
     setOriginalQueue(songs);
     setCurrentIndex(startIndex);
@@ -172,6 +173,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (navigateRef.current) {
       console.log("Navigating to /now-playing");
       navigateRef.current("/now-playing");
+    } else {
+      console.log("navigateRef.current is null, cannot navigate");
     }
   };
 
