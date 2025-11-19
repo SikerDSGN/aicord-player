@@ -26,6 +26,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2">
+            <Link to="/now-playing">
+              <Button
+                variant={isActive("/now-playing") ? "default" : "ghost"}
+                size="sm"
+              >
+                <Music className="mr-2 h-4 w-4" />
+                Přehrávač
+              </Button>
+            </Link>
+
             <Link to="/">
               <Button
                 variant={isActive("/") ? "default" : "ghost"}
@@ -100,6 +110,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-card">
             <nav className="container flex flex-col gap-2 p-4">
+              <Link to="/now-playing" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant={isActive("/now-playing") ? "default" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <Music className="mr-2 h-4 w-4" />
+                  Přehrávač
+                </Button>
+              </Link>
+
               <Link to="/" onClick={() => setMobileMenuOpen(false)}>
                 <Button
                   variant={isActive("/") ? "default" : "ghost"}
