@@ -26,9 +26,11 @@ export default function Upload() {
     return fileName
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-      .replace(/[^\w\s.-]/g, "") // Remove special chars except word chars, spaces, dots, dashes
+      .replace(/[()[\]{}]/g, "") // Remove brackets and parentheses
+      .replace(/[^\w\s.-]/g, "") // Remove other special chars except word chars, spaces, dots, dashes
       .replace(/\s+/g, "_") // Replace spaces with underscores
-      .replace(/_+/g, "_"); // Replace multiple underscores with single
+      .replace(/_+/g, "_") // Replace multiple underscores with single
+      .replace(/^_+|_+$/g, ""); // Remove leading/trailing underscores
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
