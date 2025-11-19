@@ -30,31 +30,43 @@ export default function Users() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select(`
-          id,
-          email,
-          full_name,
-          created_at,
-          user_roles (role)
-        `)
+        .select("id, email, full_name, created_at")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (profilesError) {
+        console.error("Profiles error:", profilesError);
+        throw profilesError;
+      }
 
-      const usersWithRoles = data.map((user: any) => ({
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.user_roles?.[0]?.role || "pending",
-        created_at: user.created_at,
-      }));
+      // Then get all user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+
+      if (rolesError) {
+        console.error("Roles error:", rolesError);
+        throw rolesError;
+      }
+
+      // Combine the data
+      const usersWithRoles = profilesData.map((profile) => {
+        const userRole = rolesData?.find((r) => r.user_id === profile.id);
+        return {
+          id: profile.id,
+          email: profile.email,
+          full_name: profile.full_name,
+          role: (userRole?.role || "pending") as "admin" | "listener" | "pending",
+          created_at: profile.created_at,
+        };
+      });
 
       setUsers(usersWithRoles);
     } catch (error: any) {
-      toast.error("Nepodařilo se načíst uživatele");
-      console.error(error);
+      toast.error(`Chyba: ${error.message || "Nepodařilo se načíst uživatele"}`);
+      console.error("Full error:", error);
     } finally {
       setLoading(false);
     }
