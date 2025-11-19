@@ -426,99 +426,106 @@ export default function Library() {
             </div>
           )}
           
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-4">
+          <div className="flex flex-col gap-2">
             {filteredSongs.map((song, index) => {
               const isCurrentlyPlaying = currentSong?.id === song.id;
               
               return (
                 <Card
                   key={song.id}
-                  className={`group overflow-hidden border transition-all hover:shadow-glow hover:scale-105 ${
+                  className={`group overflow-hidden border transition-all hover:shadow-glow ${
                     isCurrentlyPlaying 
                       ? "border-primary shadow-glow-soft bg-gradient-card" 
                       : "border-border bg-card"
                   }`}
                 >
-                  <div className="relative aspect-square overflow-hidden bg-muted">
-                    {song.cover_url ? (
-                      <img
-                        src={song.cover_url}
-                        alt={song.title}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Music className="h-12 md:h-16 w-12 md:w-16 text-muted-foreground opacity-50" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        size="lg"
-                        variant="glow"
-                        className="h-12 w-12 md:h-14 md:w-14 rounded-full"
-                        onClick={() => handlePlaySong(song, index)}
-                      >
-                        {isCurrentlyPlaying && isPlaying ? (
-                          <Pause className="h-5 w-5 md:h-6 md:w-6" />
-                        ) : (
-                          <Play className="h-5 w-5 md:h-6 md:w-6" />
-                        )}
-                      </Button>
+                  <div className="flex items-center gap-3 p-2 md:p-3">
+                    {/* Cover Image */}
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                      {song.cover_url ? (
+                        <img
+                          src={song.cover_url}
+                          alt={song.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <Music className="h-8 w-8 text-muted-foreground opacity-50" />
+                        </div>
+                      )}
                     </div>
-                    <div className="absolute top-2 right-2 flex gap-2">
+
+                    {/* Song Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold truncate text-sm md:text-base ${
+                        isCurrentlyPlaying ? "text-primary" : "text-foreground"
+                      }`}>
+                        {song.title}
+                      </h3>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80"
+                        className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-primary/20"
+                        onClick={() => handlePlaySong(song, index)}
+                      >
+                        {isCurrentlyPlaying && isPlaying ? (
+                          <Pause className="h-4 w-4 md:h-5 md:w-5" />
+                        ) : (
+                          <Play className="h-4 w-4 md:h-5 md:w-5" />
+                        )}
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-primary/20"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(song.id);
                         }}
                       >
                         <Heart 
-                          className={`h-4 w-4 ${
+                          className={`h-4 w-4 md:h-5 md:w-5 ${
                             favorites.has(song.id)
                               ? "fill-primary text-primary"
-                              : "text-white"
+                              : ""
                           }`}
                         />
                       </Button>
+
                       {userRole === "admin" && (
                         <>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-primary/80"
+                            className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-primary/20"
                             onClick={(e) => {
                               e.stopPropagation();
                               openEditDialog(song);
                             }}
                           >
-                            <Pencil className="h-4 w-4 text-white" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 rounded-full bg-black/60 backdrop-blur hover:bg-destructive/80"
+                            className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-destructive/20"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSongToDelete(song.id);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-white" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </>
                       )}
                     </div>
                   </div>
-                  <CardContent className="p-3 md:p-4">
-                    <h3 className={`font-semibold truncate text-sm md:text-base ${
-                      isCurrentlyPlaying ? "text-primary" : "text-foreground"
-                    }`}>
-                      {song.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground truncate">{song.artist}</p>
-                  </CardContent>
                 </Card>
               );
             })}
