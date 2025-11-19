@@ -19,7 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container flex h-16 items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2 md:gap-3 hover-scale">
             <img src={aicordLogo} alt="Aicord Logo" className="h-8 md:h-12 w-auto" />
-            <span className="text-lg md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-lg md:text-xl font-bold text-primary">
               Aicord PLAYER
             </span>
           </Link>
