@@ -8,6 +8,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Upload as UploadIcon, Music } from "lucide-react";
+import { z } from "zod";
+
+// File validation constants
+const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+// Metadata validation schema
+const uploadSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title is too long"),
+  artist: z.string().trim().min(1, "Artist is required").max(200, "Artist is too long"),
+  description: z.string().trim().max(1000, "Description is too long").optional(),
+  tags: z.string().max(500, "Tags are too long").optional()
+});
 
 export default function Upload() {
   const { user } = useAuth();
@@ -36,6 +51,37 @@ export default function Upload() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!audioFile || !user) return;
+
+    // Validate metadata
+    const metadataResult = uploadSchema.safeParse({ title, artist, description, tags });
+    if (!metadataResult.success) {
+      toast.error(metadataResult.error.errors[0].message);
+      return;
+    }
+
+    // Validate audio file type
+    if (!ALLOWED_AUDIO_TYPES.includes(audioFile.type)) {
+      toast.error("Invalid audio file type. Please upload MP3, WAV, or OGG.");
+      return;
+    }
+
+    // Validate audio file size
+    if (audioFile.size > MAX_AUDIO_SIZE) {
+      toast.error(`Audio file too large. Maximum size is ${MAX_AUDIO_SIZE / 1024 / 1024}MB.`);
+      return;
+    }
+
+    // Validate cover image if provided
+    if (coverFile) {
+      if (!ALLOWED_IMAGE_TYPES.includes(coverFile.type)) {
+        toast.error("Invalid image type. Please upload JPEG, PNG, or WEBP.");
+        return;
+      }
+      if (coverFile.size > MAX_COVER_SIZE) {
+        toast.error(`Image too large. Maximum size is ${MAX_COVER_SIZE / 1024 / 1024}MB.`);
+        return;
+      }
+    }
 
     setUploading(true);
 
@@ -98,7 +144,9 @@ export default function Upload() {
       setCoverInputKey((prev) => prev + 1);
     } catch (error: any) {
       toast.error("Failed to upload song");
-      console.error(error);
+      if (import.meta.env.DEV) {
+        console.error("Upload error:", error);
+      }
     } finally {
       setUploading(false);
     }
