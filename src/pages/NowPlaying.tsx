@@ -212,12 +212,6 @@ export default function NowPlaying() {
                   <List className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <List className="h-4 w-4" />
-              Fronta ({queue.length})
-            </Button>
-          </SheetTrigger>
           <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Přehrávací fronta</SheetTitle>
