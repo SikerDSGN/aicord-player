@@ -123,16 +123,96 @@ export default function Playlists() {
     );
   }
 
-  if (playlists.length === 0) {
+  if (playlists.length === 0 && !loading) {
     return (
-      <div className="container flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <ListMusic className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
-          <h2 className="mt-4 text-2xl font-bold">No playlists yet</h2>
-          <p className="mt-2 text-muted-foreground">
-            Check back soon for curated playlists!
-          </p>
+      <div className="container py-6 md:py-8 px-4">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Playlisty
+          </h1>
+          {user && (
+            <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Nový playlist
+            </Button>
+          )}
         </div>
+
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center">
+            <ListMusic className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
+            <h2 className="mt-4 text-2xl font-bold">Zatím žádné playlisty</h2>
+            <p className="mt-2 text-muted-foreground">
+              {user 
+                ? "Vytvořte si svůj první playlist kliknutím na tlačítko výše!" 
+                : "Pro vytváření playlistů se prosím přihlaste"}
+            </p>
+          </div>
+        </div>
+
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Vytvořit nový playlist</DialogTitle>
+              <DialogDescription>
+                Vytvořte si vlastní playlist pro vaše oblíbené skladby
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="playlist-name">Název *</Label>
+                <Input
+                  id="playlist-name"
+                  value={newPlaylist.name}
+                  onChange={(e) =>
+                    setNewPlaylist({ ...newPlaylist, name: e.target.value })
+                  }
+                  placeholder="Např. Moje oblíbené"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="playlist-description">Popis</Label>
+                <Textarea
+                  id="playlist-description"
+                  value={newPlaylist.description}
+                  onChange={(e) =>
+                    setNewPlaylist({ ...newPlaylist, description: e.target.value })
+                  }
+                  placeholder="Přidejte popis (volitelné)"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="playlist-cover">Obrázek (volitelné)</Label>
+                <Input
+                  id="playlist-cover"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                />
+                {coverFile && (
+                  <p className="text-sm text-muted-foreground">{coverFile.name}</p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCreateDialog(false);
+                  setNewPlaylist({ name: "", description: "" });
+                  setCoverFile(null);
+                }}
+                disabled={creating}
+              >
+                Zrušit
+              </Button>
+              <Button onClick={handleCreatePlaylist} disabled={creating}>
+                {creating ? "Vytvářím..." : "Vytvořit"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
