@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Upload as UploadIcon, Music } from "lucide-react";
+import { Upload as UploadIcon, Music, Video } from "lucide-react";
 import { z } from "zod";
 
 // File validation constants
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
 const ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
 
 // Metadata validation schema
 const uploadSchema = z.object({
@@ -32,9 +34,11 @@ export default function Upload() {
   const [tags, setTags] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [audioInputKey, setAudioInputKey] = useState(0);
   const [coverInputKey, setCoverInputKey] = useState(0);
+  const [videoInputKey, setVideoInputKey] = useState(0);
 
   const sanitizeFileName = (fileName: string) => {
     // Remove special characters and replace spaces with underscores
@@ -83,6 +87,18 @@ export default function Upload() {
       }
     }
 
+    // Validate video file if provided
+    if (videoFile) {
+      if (!ALLOWED_VIDEO_TYPES.includes(videoFile.type)) {
+        toast.error("Invalid video type. Please upload MP4, WebM, OGG, or MOV.");
+        return;
+      }
+      if (videoFile.size > MAX_VIDEO_SIZE) {
+        toast.error(`Video too large. Maximum size is ${MAX_VIDEO_SIZE / 1024 / 1024}MB.`);
+        return;
+      }
+    }
+
     setUploading(true);
 
     try {
@@ -117,6 +133,24 @@ export default function Upload() {
         coverUrl = coverData.publicUrl;
       }
 
+      // Upload video if provided
+      let videoUrl = null;
+      if (videoFile) {
+        const sanitizedVideoName = sanitizeFileName(videoFile.name);
+        const videoFileName = `${Date.now()}-${sanitizedVideoName}`;
+        const { error: videoError } = await supabase.storage
+          .from("videos")
+          .upload(videoFileName, videoFile);
+
+        if (videoError) throw videoError;
+
+        const { data: videoData } = supabase.storage
+          .from("videos")
+          .getPublicUrl(videoFileName);
+
+        videoUrl = videoData.publicUrl;
+      }
+
       // Create song record
       const { error: dbError } = await supabase.from("songs").insert({
         title,
@@ -125,6 +159,7 @@ export default function Upload() {
         tags: tags ? tags.split(",").map((t) => t.trim()) : [],
         audio_url: audioData.publicUrl,
         cover_url: coverUrl,
+        video_url: videoUrl,
         uploaded_by: user.id,
       });
 
@@ -139,9 +174,11 @@ export default function Upload() {
       setTags("");
       setAudioFile(null);
       setCoverFile(null);
+      setVideoFile(null);
       // Reset file inputs by changing their keys
       setAudioInputKey((prev) => prev + 1);
       setCoverInputKey((prev) => prev + 1);
+      setVideoInputKey((prev) => prev + 1);
     } catch (error: any) {
       toast.error("Failed to upload song");
       if (import.meta.env.DEV) {
@@ -235,6 +272,25 @@ export default function Upload() {
               {coverFile && (
                 <p className="text-sm text-muted-foreground">
                   {coverFile.name}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="video" className="flex items-center gap-2">
+                <Video className="h-4 w-4 text-primary" />
+                Video Clip (Optional - max 500MB)
+              </Label>
+              <Input
+                key={videoInputKey}
+                id="video"
+                type="file"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+              />
+              {videoFile && (
+                <p className="text-sm text-muted-foreground">
+                  {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
             </div>

@@ -154,10 +154,19 @@ export default function NowPlaying() {
 
       {/* Main Content - Centered like YouTube Music */}
       <div className="container max-w-4xl mx-auto px-4 py-6 sm:py-12 flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)]">
-        {/* Album Art with Visualizer Overlay */}
+        {/* Album Art / Video with Visualizer Overlay */}
         <div className="relative mb-8 animate-fade-in">
           <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 hover-scale transition-smooth">
-            {currentSong.cover_url ? (
+            {currentSong.video_url ? (
+              <video
+                src={currentSong.video_url}
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            ) : currentSong.cover_url ? (
               <img
                 src={currentSong.cover_url}
                 alt={currentSong.title}
@@ -169,10 +178,12 @@ export default function NowPlaying() {
               </div>
             )}
             
-            {/* Visualizer Overlay */}
-            <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-60">
-              <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
-            </div>
+            {/* Visualizer Overlay - only show when no video */}
+            {!currentSong.video_url && (
+              <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-60">
+                <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} />
+              </div>
+            )}
           </div>
         </div>
 
