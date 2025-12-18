@@ -161,10 +161,21 @@ export default function NowPlaying() {
               <video
                 src={currentSong.video_url}
                 className="w-full h-full object-cover"
-                autoPlay
+                autoPlay={isPlaying}
                 loop
-                muted
                 playsInline
+                ref={(el) => {
+                  // Sync video with audio playback
+                  if (el && audioRef.current) {
+                    el.currentTime = audioRef.current.currentTime;
+                    el.muted = true; // Mute video, audio comes from audioRef
+                    if (isPlaying) {
+                      el.play().catch(() => {});
+                    } else {
+                      el.pause();
+                    }
+                  }
+                }}
               />
             ) : currentSong.cover_url ? (
               <img
