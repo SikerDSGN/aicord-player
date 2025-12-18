@@ -39,6 +39,7 @@ interface Song {
   audio_url: string;
   cover_url: string | null;
   description: string | null;
+  video_url: string | null;
 }
 
 interface Playlist {
