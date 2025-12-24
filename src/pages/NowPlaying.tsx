@@ -64,19 +64,33 @@ export default function NowPlaying() {
     if (!video || !audio || !currentSong?.video_url) return;
 
     video.muted = true;
-    
-    // Only sync time if drift is significant
-    const timeDiff = Math.abs(video.currentTime - audio.currentTime);
-    if (timeDiff > 1) {
-      video.currentTime = audio.currentTime;
-    }
+    // Always sync when play state changes
+    video.currentTime = audio.currentTime;
     
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isPlaying, audioRef]);
+  }, [isPlaying, currentSong?.video_url, audioRef]);
+
+  // Periodic sync for video preview
+  useEffect(() => {
+    const video = videoPreviewRef.current;
+    const audio = audioRef.current;
+    if (!video || !audio || !currentSong?.video_url || !isPlaying) return;
+
+    const syncInterval = setInterval(() => {
+      if (video && audio) {
+        const drift = Math.abs(video.currentTime - audio.currentTime);
+        if (drift > 0.5) {
+          video.currentTime = audio.currentTime;
+        }
+      }
+    }, 500);
+
+    return () => clearInterval(syncInterval);
+  }, [currentSong?.video_url, isPlaying, audioRef]);
 
   // Register navigate function with PlayerContext
   useEffect(() => {
