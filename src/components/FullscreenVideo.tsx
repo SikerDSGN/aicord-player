@@ -40,35 +40,44 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync video with audio
+  // Sync video with audio on open and play/pause changes
   useEffect(() => {
-    if (videoRef.current && audioRef.current && isOpen) {
-      videoRef.current.currentTime = audioRef.current.currentTime;
-      videoRef.current.muted = true;
-      
-      if (isPlaying) {
-        videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [isPlaying, currentSong, isOpen]);
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video || !audio || !isOpen) return;
 
-  // Keep video in sync with audio time
+    video.muted = true;
+    
+    // Only sync time once when opening
+    const timeDiff = Math.abs(video.currentTime - audio.currentTime);
+    if (timeDiff > 0.5) {
+      video.currentTime = audio.currentTime;
+    }
+    
+    if (isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, isOpen, audioRef]);
+
+  // Keep video in sync with audio time (less aggressive)
   useEffect(() => {
     if (!isOpen || !videoRef.current || !audioRef.current) return;
 
     const syncInterval = setInterval(() => {
-      if (videoRef.current && audioRef.current) {
-        const drift = Math.abs(videoRef.current.currentTime - audioRef.current.currentTime);
-        if (drift > 0.3) {
-          videoRef.current.currentTime = audioRef.current.currentTime;
+      const video = videoRef.current;
+      const audio = audioRef.current;
+      if (video && audio && isPlaying) {
+        const drift = Math.abs(video.currentTime - audio.currentTime);
+        if (drift > 1) { // Only sync if drift is significant (>1 second)
+          video.currentTime = audio.currentTime;
         }
       }
-    }, 1000);
+    }, 2000); // Check less frequently
 
     return () => clearInterval(syncInterval);
-  }, [isOpen]);
+  }, [isOpen, isPlaying, audioRef]);
 
   // Auto-hide controls
   const resetControlsTimeout = () => {
@@ -123,7 +132,8 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleClose = () => {
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent container onClick from interfering
     if (document.fullscreenElement) {
       document.exitFullscreen();
     }
@@ -137,7 +147,7 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
       ref={containerRef}
       className="fixed inset-0 z-[300] bg-black flex items-center justify-center"
       onMouseMove={resetControlsTimeout}
-      onClick={resetControlsTimeout}
+      onTouchStart={resetControlsTimeout}
     >
       {/* Video */}
       <video
