@@ -234,7 +234,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    setIsPlaying((prev) => !prev);
   };
 
   const seekTo = (time: number) => {
