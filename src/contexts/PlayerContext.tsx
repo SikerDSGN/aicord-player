@@ -56,10 +56,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     navigateRef.current = navigate;
   };
 
+  // Keep latest values in refs so event listeners (attached once) see fresh state
+  const currentSongRef = useRef<Song | null>(null);
+  const repeatRef = useRef<"off" | "all" | "one">("off");
+  const playNextRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    currentSongRef.current = currentSong;
+  }, [currentSong]);
+
+  useEffect(() => {
+    repeatRef.current = repeat;
+  }, [repeat]);
+
   useEffect(() => {
     const audio = new Audio();
-    audio.preload = 'auto';
-    audio.crossOrigin = 'anonymous';
+    audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
     audioRef.current = audio;
 
     const handleTimeUpdate = () => {
@@ -73,23 +86,26 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     const handleEnded = () => {
       console.log("Audio ended");
-      if (repeat === "one") {
-        seekTo(0);
-        setIsPlaying(true);
+      if (repeatRef.current === "one") {
+        audio.currentTime = 0;
+        // keep playing if user was playing
+        audio.play().catch(() => {
+          setIsPlaying(false);
+        });
       } else {
-        playNext();
+        playNextRef.current?.();
       }
     };
 
     // Track play count when song starts playing
     const handlePlay = () => {
-      if (currentSong) {
-        incrementPlayCount(currentSong.id);
+      const song = currentSongRef.current;
+      if (song) {
+        incrementPlayCount(song.id);
       }
     };
 
     audio.addEventListener("play", handlePlay);
-
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
@@ -102,7 +118,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.pause();
       audio.src = "";
     };
-  }, [repeat, currentSong]);
+  }, []);
 
   // Track which songs have been counted this session
   const countedSongsRef = useRef<Set<string>>(new Set());
@@ -131,55 +147,42 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const audio = audioRef.current;
       console.log("Setting audio source:", currentSong.audio_url);
       console.log("Current song data:", currentSong);
-      
+
       // Reset audio state
       audio.pause();
       audio.currentTime = 0;
       audio.src = currentSong.audio_url;
-      
-      // Wait for audio to be loaded before playing
-      const handleCanPlay = () => {
-        console.log("Audio can play, isPlaying:", isPlaying);
-        if (isPlaying) {
-          audio.play().catch((error) => {
-            console.error("Error playing audio:", error);
-            setIsPlaying(false);
-          });
-        }
-      };
-      
+
       const handleError = (e: Event) => {
         console.error("Audio error event:", e);
         console.error("Audio error details:", {
           src: audio.src,
           error: audio.error,
           networkState: audio.networkState,
-          readyState: audio.readyState
+          readyState: audio.readyState,
         });
         setIsPlaying(false);
       };
-      
+
       const handleLoadStart = () => {
         console.log("Audio load started");
       };
-      
+
       const handleLoadedData = () => {
         console.log("Audio data loaded successfully");
       };
-      
-      audio.addEventListener('canplay', handleCanPlay, { once: true });
-      audio.addEventListener('error', handleError);
-      audio.addEventListener('loadstart', handleLoadStart);
-      audio.addEventListener('loadeddata', handleLoadedData);
-      
+
+      audio.addEventListener("error", handleError);
+      audio.addEventListener("loadstart", handleLoadStart);
+      audio.addEventListener("loadeddata", handleLoadedData);
+
       // Load the audio
       audio.load();
-      
+
       return () => {
-        audio.removeEventListener('canplay', handleCanPlay);
-        audio.removeEventListener('error', handleError);
-        audio.removeEventListener('loadstart', handleLoadStart);
-        audio.removeEventListener('loadeddata', handleLoadedData);
+        audio.removeEventListener("error", handleError);
+        audio.removeEventListener("loadstart", handleLoadStart);
+        audio.removeEventListener("loadeddata", handleLoadedData);
       };
     }
   }, [currentSong]);
@@ -263,6 +266,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       setIsPlaying(true);
     }
   };
+
+  useEffect(() => {
+    playNextRef.current = playNext;
+  }, [playNext]);
 
   const playPrevious = () => {
     if (currentTime > 3) {

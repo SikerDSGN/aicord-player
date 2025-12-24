@@ -57,39 +57,54 @@ export default function NowPlaying() {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [fullscreenVideoOpen, setFullscreenVideoOpen] = useState(false);
 
-  // Sync video preview with audio playback
+  // Sync video preview with audio playback (avoid aggressive re-seeking)
   useEffect(() => {
     const video = videoPreviewRef.current;
     const audio = audioRef.current;
     if (!video || !audio || !currentSong?.video_url) return;
 
     video.muted = true;
-    // Always sync when play state changes
+    video.playsInline = true;
+
+    // Initial sync when the video source changes
     video.currentTime = audio.currentTime;
-    
+
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isPlaying, currentSong?.video_url, audioRef]);
+  }, [currentSong?.video_url]);
 
-  // Periodic sync for video preview
+  // Play/pause only (do not reset currentTime on every toggle)
+  useEffect(() => {
+    const video = videoPreviewRef.current;
+    if (!video || !currentSong?.video_url) return;
+
+    if (isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, currentSong?.video_url]);
+
+  // Periodic drift correction (gentler)
   useEffect(() => {
     const video = videoPreviewRef.current;
     const audio = audioRef.current;
     if (!video || !audio || !currentSong?.video_url || !isPlaying) return;
 
-    const syncInterval = setInterval(() => {
-      if (video && audio) {
-        const drift = Math.abs(video.currentTime - audio.currentTime);
-        if (drift > 0.5) {
-          video.currentTime = audio.currentTime;
-        }
-      }
-    }, 500);
+    const syncInterval = window.setInterval(() => {
+      if (!video || !audio) return;
+      if (video.seeking || video.readyState < 2) return;
 
-    return () => clearInterval(syncInterval);
+      const drift = Math.abs(video.currentTime - audio.currentTime);
+      if (drift > 1.0) {
+        video.currentTime = audio.currentTime;
+      }
+    }, 750);
+
+    return () => window.clearInterval(syncInterval);
   }, [currentSong?.video_url, isPlaying, audioRef]);
 
   // Register navigate function with PlayerContext
