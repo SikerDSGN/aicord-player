@@ -51,10 +51,27 @@ export default function NowPlaying() {
   } = usePlayer();
 
   const navigate = useNavigate();
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const [queueOpen, setQueueOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [fullscreenVideoOpen, setFullscreenVideoOpen] = useState(false);
+
+  // Sync video preview with audio playback
+  useEffect(() => {
+    const video = videoPreviewRef.current;
+    const audio = audioRef.current;
+    if (!video || !audio || !currentSong?.video_url) return;
+
+    video.muted = true;
+    video.currentTime = audio.currentTime;
+    
+    if (isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, currentSong, audioRef]);
 
   // Register navigate function with PlayerContext
   useEffect(() => {
@@ -169,23 +186,12 @@ export default function NowPlaying() {
             {currentSong.video_url ? (
               <>
                 <video
+                  ref={videoPreviewRef}
                   src={currentSong.video_url}
                   className="w-full h-full object-cover"
-                  autoPlay={isPlaying}
                   loop
                   playsInline
-                  ref={(el) => {
-                    // Sync video with audio playback
-                    if (el && audioRef.current) {
-                      el.currentTime = audioRef.current.currentTime;
-                      el.muted = true; // Mute video, audio comes from audioRef
-                      if (isPlaying) {
-                        el.play().catch(() => {});
-                      } else {
-                        el.pause();
-                      }
-                    }
-                  }}
+                  muted
                 />
                 {/* Fullscreen indicator */}
                 <div className="absolute bottom-2 right-2 bg-black/50 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
