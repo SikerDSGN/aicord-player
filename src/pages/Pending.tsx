@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Music } from "lucide-react";
-import aicordLogo from "@/assets/aicord-logo.webp";
+import aicordLogo from "@/assets/aicord-logo-small.webp";
 
 export default function Pending() {
   const { signOut } = useAuth();

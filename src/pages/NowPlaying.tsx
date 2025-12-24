@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Link, useNavigate } from "react-router-dom";
-import aicordLogo from "@/assets/aicord-logo.webp";
+import aicordLogo from "@/assets/aicord-logo-small.webp";
 
 export default function NowPlaying() {
   const {

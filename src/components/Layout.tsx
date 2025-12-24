@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Library, Users, Upload, LogOut, Menu, X, Heart } from "lucide-react";
-import aicordLogo from "@/assets/aicord-logo.webp";
+import aicordLogo from "@/assets/aicord-logo-small.webp";
 import { useState } from "react";
 
 export function Layout({ children }: { children: React.ReactNode }) {

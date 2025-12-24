@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import aicordLogo from "@/assets/aicord-logo.webp";
+import aicordLogo from "@/assets/aicord-logo-small.webp";
 import { z } from "zod";
 
 const signUpSchema = z.object({
