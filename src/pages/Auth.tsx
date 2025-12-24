@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import aicordLogo from "@/assets/aicord-logo-small.webp";
 import { z } from "zod";
+import { getSafeAuthError } from "@/lib/auth-errors";
 
 const signUpSchema = z.object({
   email: z.string().trim().email("Neplatná emailová adresa").max(255, "Email je příliš dlouhý"),
@@ -56,8 +57,8 @@ export default function Auth() {
 
       toast.success("Účet vytvořen! Čekejte na schválení adminem.");
       navigate("/pending");
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getSafeAuthError(error));
     } finally {
       setLoading(false);
     }
@@ -85,8 +86,8 @@ export default function Auth() {
 
       toast.success("Vítejte zpět!");
       navigate("/");
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getSafeAuthError(error));
     } finally {
       setLoading(false);
     }
