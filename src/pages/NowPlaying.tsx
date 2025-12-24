@@ -64,14 +64,19 @@ export default function NowPlaying() {
     if (!video || !audio || !currentSong?.video_url) return;
 
     video.muted = true;
-    video.currentTime = audio.currentTime;
+    
+    // Only sync time if drift is significant
+    const timeDiff = Math.abs(video.currentTime - audio.currentTime);
+    if (timeDiff > 1) {
+      video.currentTime = audio.currentTime;
+    }
     
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isPlaying, currentSong, audioRef]);
+  }, [isPlaying, audioRef]);
 
   // Register navigate function with PlayerContext
   useEffect(() => {
