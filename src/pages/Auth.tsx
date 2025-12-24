@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import aicordLogo from "@/assets/aicord-logo.png";
+import aicordLogo from "@/assets/aicord-logo.webp";
 import { z } from "zod";
 
 const signUpSchema = z.object({
@@ -96,7 +96,7 @@ export default function Auth() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-dark p-4">
       <Card className="w-full max-w-md border-border/50 shadow-elevated animate-scale-in">
         <CardHeader className="space-y-1 text-center">
-          <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 md:h-20 mb-4 hover-scale" />
+          <img src={aicordLogo} alt="Aicord Logo" width="80" height="80" className="mx-auto h-16 md:h-20 w-auto mb-4 hover-scale" />
           <CardTitle className="text-2xl md:text-3xl font-bold text-primary">
             Aicord PLAYER
           </CardTitle>

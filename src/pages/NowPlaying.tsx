@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Link, useNavigate } from "react-router-dom";
-import aicordLogo from "@/assets/aicord-logo.png";
+import aicordLogo from "@/assets/aicord-logo.webp";
 
 export default function NowPlaying() {
   const {
@@ -154,7 +154,7 @@ export default function NowPlaying() {
           </Button>
 
           <div className="flex items-center gap-2">
-            <img src={aicordLogo} alt="Aicord" className="h-7 sm:h-8 w-auto opacity-80" />
+            <img src={aicordLogo} alt="Aicord" width="32" height="32" className="h-7 sm:h-8 w-auto opacity-80" />
           </div>
 
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
