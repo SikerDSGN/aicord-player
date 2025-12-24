@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Song {
   id: string;
@@ -9,6 +10,7 @@ interface Song {
   cover_url?: string;
   video_url?: string | null;
   description?: string | null;
+  play_count?: number;
 }
 
 interface PlayerContextType {
@@ -79,6 +81,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Track play count when song starts playing
+    const handlePlay = () => {
+      if (currentSong) {
+        incrementPlayCount(currentSong.id);
+      }
+    };
+
+    audio.addEventListener("play", handlePlay);
+
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
@@ -87,10 +98,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
       audio.pause();
       audio.src = "";
     };
-  }, [repeat]);
+  }, [repeat, currentSong]);
+
+  // Track which songs have been counted this session
+  const countedSongsRef = useRef<Set<string>>(new Set());
+
+  const incrementPlayCount = async (songId: string) => {
+    // Only count once per song per session
+    if (countedSongsRef.current.has(songId)) return;
+    countedSongsRef.current.add(songId);
+
+    try {
+      await supabase.rpc("increment_play_count", { song_id: songId });
+      console.log("Play count incremented for:", songId);
+    } catch (error) {
+      console.error("Error incrementing play count:", error);
+    }
+  };
 
   useEffect(() => {
     if (audioRef.current) {
