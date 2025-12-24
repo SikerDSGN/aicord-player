@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Library, Users, Upload, LogOut, Menu, X, Heart } from "lucide-react";
-import aicordLogo from "@/assets/aicord-logo.png";
+import aicordLogo from "@/assets/aicord-logo.webp";
 import { useState } from "react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -91,7 +91,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-50 border-b border-border/50 bg-gradient-card backdrop-blur-lg shadow-elevated supports-[backdrop-filter]:bg-card/60">
           <div className="container flex h-16 items-center justify-between px-4">
             <Link to="/" className="flex items-center gap-2 md:gap-3 hover-scale">
-              <img src={aicordLogo} alt="Aicord Logo" className="h-8 md:h-12 w-auto" />
+              <img src={aicordLogo} alt="Aicord Logo" width="48" height="48" className="h-8 md:h-12 w-auto" />
               <span className="text-lg md:text-xl font-bold text-primary">
                 Aicord PLAYER
               </span>

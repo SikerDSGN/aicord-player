@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Music } from "lucide-react";
-import aicordLogo from "@/assets/aicord-logo.png";
+import aicordLogo from "@/assets/aicord-logo.webp";
 
 export default function Pending() {
   const { signOut } = useAuth();
@@ -11,7 +11,7 @@ export default function Pending() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-dark p-4">
       <Card className="w-full max-w-md border-border/50 shadow-elevated animate-scale-in text-center">
         <CardHeader>
-          <img src={aicordLogo} alt="Aicord Logo" className="mx-auto h-16 mb-4 hover-scale" />
+          <img src={aicordLogo} alt="Aicord Logo" width="64" height="64" className="mx-auto h-16 w-auto mb-4 hover-scale" />
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted shadow-glow-soft animate-pulse-glow">
             <Clock className="h-8 w-8 text-primary" />
           </div>
