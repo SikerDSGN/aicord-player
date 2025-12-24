@@ -24,7 +24,7 @@ import {
   MessageCircle,
   Maximize
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Link, useNavigate } from "react-router-dom";
 import aicordLogo from "@/assets/aicord-logo.png";
 
@@ -219,6 +219,11 @@ export default function NowPlaying() {
             {currentSong.title}
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground truncate px-4">{currentSong.artist}</p>
+          {currentSong.play_count !== undefined && currentSong.play_count > 0 && (
+            <p className="text-sm text-muted-foreground/70 mt-1">
+              {currentSong.play_count.toLocaleString('cs-CZ')} přehrání
+            </p>
+          )}
         </div>
 
         {/* Controls Container */}
@@ -311,8 +316,11 @@ export default function NowPlaying() {
                 <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl">
                   <SheetHeader>
                     <SheetTitle>Komentáře - {currentSong.title}</SheetTitle>
+                    <SheetDescription>
+                      Sdílejte své názory na tuto skladbu
+                    </SheetDescription>
                   </SheetHeader>
-                  <div className="mt-4 overflow-y-auto h-[calc(100%-3rem)]">
+                  <div className="mt-4 overflow-y-auto h-[calc(100%-5rem)]">
                     <SongComments songId={currentSong.id} />
                   </div>
                 </SheetContent>
