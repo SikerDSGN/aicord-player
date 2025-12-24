@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
+import { SongComments } from "@/components/SongComments";
+import { FullscreenVideo } from "@/components/FullscreenVideo";
 import { 
   Play, 
   Pause, 
@@ -18,7 +20,9 @@ import {
   ChevronDown,
   MoreVertical,
   Heart,
-  Menu
+  Menu,
+  MessageCircle,
+  Maximize
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link, useNavigate } from "react-router-dom";
@@ -49,6 +53,8 @@ export default function NowPlaying() {
   const navigate = useNavigate();
   const [queueOpen, setQueueOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [fullscreenVideoOpen, setFullscreenVideoOpen] = useState(false);
 
   // Register navigate function with PlayerContext
   useEffect(() => {
@@ -156,27 +162,36 @@ export default function NowPlaying() {
       <div className="container max-w-4xl mx-auto px-4 py-6 sm:py-12 flex flex-col items-center justify-center min-h-[calc(100vh-3.5rem)]">
         {/* Album Art / Video with Visualizer Overlay */}
         <div className="relative mb-8 animate-fade-in">
-          <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 hover-scale transition-smooth">
+          <div 
+            className="relative w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 hover-scale transition-smooth cursor-pointer"
+            onClick={() => currentSong.video_url && setFullscreenVideoOpen(true)}
+          >
             {currentSong.video_url ? (
-              <video
-                src={currentSong.video_url}
-                className="w-full h-full object-cover"
-                autoPlay={isPlaying}
-                loop
-                playsInline
-                ref={(el) => {
-                  // Sync video with audio playback
-                  if (el && audioRef.current) {
-                    el.currentTime = audioRef.current.currentTime;
-                    el.muted = true; // Mute video, audio comes from audioRef
-                    if (isPlaying) {
-                      el.play().catch(() => {});
-                    } else {
-                      el.pause();
+              <>
+                <video
+                  src={currentSong.video_url}
+                  className="w-full h-full object-cover"
+                  autoPlay={isPlaying}
+                  loop
+                  playsInline
+                  ref={(el) => {
+                    // Sync video with audio playback
+                    if (el && audioRef.current) {
+                      el.currentTime = audioRef.current.currentTime;
+                      el.muted = true; // Mute video, audio comes from audioRef
+                      if (isPlaying) {
+                        el.play().catch(() => {});
+                      } else {
+                        el.pause();
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+                {/* Fullscreen indicator */}
+                <div className="absolute bottom-2 right-2 bg-black/50 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Maximize className="h-4 w-4 text-white" />
+                </div>
+              </>
             ) : currentSong.cover_url ? (
               <img
                 src={currentSong.cover_url}
@@ -283,9 +298,35 @@ export default function NowPlaying() {
 
           {/* Secondary Controls */}
           <div className="flex items-center justify-between px-4">
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon">
+                <Heart className="h-5 w-5" />
+              </Button>
+              <Sheet open={commentsOpen} onOpenChange={setCommentsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MessageCircle className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl">
+                  <SheetHeader>
+                    <SheetTitle>Komentáře - {currentSong.title}</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-4 overflow-y-auto h-[calc(100%-3rem)]">
+                    <SongComments songId={currentSong.id} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              {currentSong.video_url && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setFullscreenVideoOpen(true)}
+                >
+                  <Maximize className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
 
             <div className="flex items-center gap-2 flex-1 max-w-xs mx-4">
               <Volume2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -364,6 +405,12 @@ export default function NowPlaying() {
 
         </div>
       </div>
+
+      {/* Fullscreen Video */}
+      <FullscreenVideo 
+        isOpen={fullscreenVideoOpen} 
+        onClose={() => setFullscreenVideoOpen(false)} 
+      />
     </div>
   );
 }

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          song_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          song_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          song_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -148,6 +183,7 @@ export type Database = {
           description: string | null
           duration: number | null
           id: string
+          play_count: number
           tags: string[] | null
           title: string
           updated_at: string | null
@@ -162,6 +198,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          play_count?: number
           tags?: string[] | null
           title: string
           updated_at?: string | null
@@ -176,6 +213,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          play_count?: number
           tags?: string[] | null
           title?: string
           updated_at?: string | null
@@ -224,6 +262,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_play_count: { Args: { song_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "listener" | "pending"

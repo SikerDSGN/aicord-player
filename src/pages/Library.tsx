@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { LoadingGrid } from "@/components/LoadingSkeletons";
 import { Link, useNavigate } from "react-router-dom";
 import { SharePlaylistDialog } from "@/components/SharePlaylistDialog";
+import { TopSongs } from "@/components/TopSongs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -409,25 +410,28 @@ export default function Library() {
 
         {/* Songs Tab */}
         <TabsContent value="songs" className="mt-0">
-          <div className="mb-6 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Hledat podle názvu, interpreta..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main song list */}
+            <div className="lg:col-span-2">
+              <div className="mb-6 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Hledat podle názvu, interpreta..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-          {filteredSongs.length === 0 && searchQuery && (
-            <div className="text-center py-8">
-              <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-              <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
-            </div>
-          )}
-          
-          <div className="flex flex-col gap-2">
+              {filteredSongs.length === 0 && searchQuery && (
+                <div className="text-center py-8">
+                  <Music className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+                  <p className="text-muted-foreground">Žádné skladby nenalezeny pro "{searchQuery}"</p>
+                </div>
+              )}
+              
+              <div className="flex flex-col gap-2">
             {filteredSongs.map((song, index) => {
               const isCurrentlyPlaying = currentSong?.id === song.id;
               
@@ -530,6 +534,13 @@ export default function Library() {
                 </Card>
               );
             })}
+              </div>
+            </div>
+            
+            {/* Top Songs Sidebar */}
+            <div className="hidden lg:block">
+              <TopSongs />
+            </div>
           </div>
         </TabsContent>
 
