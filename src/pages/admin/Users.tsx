@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Shield, User } from "lucide-react";
+import { getSafeError } from "@/lib/auth-errors";
 
 interface UserWithRole {
   id: string;
@@ -64,9 +65,8 @@ export default function Users() {
       });
 
       setUsers(usersWithRoles);
-    } catch (error: any) {
-      toast.error(`Chyba: ${error.message || "Nepodařilo se načíst uživatele"}`);
-      console.error("Full error:", error);
+    } catch (error: unknown) {
+      toast.error(getSafeError(error, "Nepodařilo se načíst uživatele"));
     } finally {
       setLoading(false);
     }
