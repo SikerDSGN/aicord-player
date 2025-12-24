@@ -63,7 +63,7 @@ export default function NowPlaying() {
 
   if (!currentSong) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-[200] overflow-auto">
+      <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-40 overflow-auto">
         <header className="sticky top-0 z-10 bg-gradient-to-b from-background/95 to-transparent backdrop-blur-md border-b border-border/20">
           <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
             <Button 
@@ -103,7 +103,7 @@ export default function NowPlaying() {
   const currentIndex = queue.findIndex(song => song.id === currentSong.id);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-[200] overflow-auto">
+    <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background/95 z-40 overflow-auto">
       {/* Header - YouTube Music Style */}
       <header className="sticky top-0 z-10 bg-gradient-to-b from-background/95 to-transparent backdrop-blur-md border-b border-border/20">
         <div className="container flex h-14 sm:h-16 items-center justify-between px-4">

@@ -538,7 +538,7 @@ export default function Library() {
             </div>
             
             {/* Top Songs Sidebar */}
-            <div className="hidden lg:block">
+            <div className="lg:block">
               <TopSongs />
             </div>
           </div>
