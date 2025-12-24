@@ -47,12 +47,8 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
     if (!video || !audio || !isOpen) return;
 
     video.muted = true;
-    
-    // Only sync time once when opening
-    const timeDiff = Math.abs(video.currentTime - audio.currentTime);
-    if (timeDiff > 0.5) {
-      video.currentTime = audio.currentTime;
-    }
+    // Always sync time when starting to play
+    video.currentTime = audio.currentTime;
     
     if (isPlaying) {
       video.play().catch(() => {});
@@ -61,20 +57,20 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
     }
   }, [isPlaying, isOpen, audioRef]);
 
-  // Keep video in sync with audio time (less aggressive)
+  // Keep video in sync with audio time
   useEffect(() => {
-    if (!isOpen || !videoRef.current || !audioRef.current) return;
+    if (!isOpen || !videoRef.current || !audioRef.current || !isPlaying) return;
 
     const syncInterval = setInterval(() => {
       const video = videoRef.current;
       const audio = audioRef.current;
-      if (video && audio && isPlaying) {
+      if (video && audio) {
         const drift = Math.abs(video.currentTime - audio.currentTime);
-        if (drift > 1) { // Only sync if drift is significant (>1 second)
+        if (drift > 0.5) {
           video.currentTime = audio.currentTime;
         }
       }
-    }, 2000); // Check less frequently
+    }, 500);
 
     return () => clearInterval(syncInterval);
   }, [isOpen, isPlaying, audioRef]);
