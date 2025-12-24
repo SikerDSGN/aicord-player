@@ -40,39 +40,54 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync video with audio on open and play/pause changes
+  // Sync video with audio on open (avoid aggressive re-seeking)
   useEffect(() => {
     const video = videoRef.current;
     const audio = audioRef.current;
     if (!video || !audio || !isOpen) return;
 
     video.muted = true;
-    // Always sync time when starting to play
+    video.playsInline = true;
+
+    // Initial sync when opening
     video.currentTime = audio.currentTime;
-    
+
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isPlaying, isOpen, audioRef]);
+  }, [isOpen]);
 
-  // Keep video in sync with audio time
+  // Play/pause only (do not reset currentTime on every toggle)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !isOpen) return;
+
+    if (isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, isOpen]);
+
+  // Keep video in sync with audio time (gentler)
   useEffect(() => {
     if (!isOpen || !videoRef.current || !audioRef.current || !isPlaying) return;
 
-    const syncInterval = setInterval(() => {
+    const syncInterval = window.setInterval(() => {
       const video = videoRef.current;
       const audio = audioRef.current;
-      if (video && audio) {
-        const drift = Math.abs(video.currentTime - audio.currentTime);
-        if (drift > 0.5) {
-          video.currentTime = audio.currentTime;
-        }
-      }
-    }, 500);
+      if (!video || !audio) return;
+      if (video.seeking || video.readyState < 2) return;
 
-    return () => clearInterval(syncInterval);
+      const drift = Math.abs(video.currentTime - audio.currentTime);
+      if (drift > 1.0) {
+        video.currentTime = audio.currentTime;
+      }
+    }, 750);
+
+    return () => window.clearInterval(syncInterval);
   }, [isOpen, isPlaying, audioRef]);
 
   // Auto-hide controls
