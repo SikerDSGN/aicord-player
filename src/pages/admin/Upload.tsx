@@ -41,6 +41,48 @@ export default function Upload() {
   const [audioInputKey, setAudioInputKey] = useState(0);
   const [coverInputKey, setCoverInputKey] = useState(0);
   const [videoInputKey, setVideoInputKey] = useState(0);
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [generatedCoverPreview, setGeneratedCoverPreview] = useState<string | null>(null);
+
+  const handleGenerateCover = async () => {
+    if (!title.trim() && !artist.trim() && !description.trim()) {
+      toast.error("Vyplňte název, interpreta nebo popis pro generování obrázku");
+      return;
+    }
+    setGeneratingCover(true);
+    try {
+      const prompt = [
+        title && `Song titled "${title}"`,
+        artist && `by ${artist}`,
+        description && `Description: ${description}`,
+        tags && `Style/tags: ${tags}`,
+      ]
+        .filter(Boolean)
+        .join(". ");
+
+      const { data, error } = await supabase.functions.invoke("generate-cover", {
+        body: { prompt },
+      });
+      if (error) throw error;
+      if (!data?.imageUrl) throw new Error("No image returned");
+
+      // Convert data URL to File
+      const res = await fetch(data.imageUrl);
+      const blob = await res.blob();
+      const ext = blob.type.split("/")[1] || "png";
+      const file = new File([blob], `generated-cover-${Date.now()}.${ext}`, { type: blob.type });
+      setCoverFile(file);
+      setGeneratedCoverPreview(data.imageUrl);
+      setCoverInputKey((prev) => prev + 1);
+      toast.success("Obrázek byl vygenerován");
+    } catch (err: any) {
+      const msg = err?.message || "Nepodařilo se vygenerovat obrázek";
+      toast.error(msg);
+      if (import.meta.env.DEV) console.error("Generate cover error:", err);
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
 
   const sanitizeFileName = (fileName: string) => {
     return fileName
