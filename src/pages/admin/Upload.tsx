@@ -245,6 +245,7 @@ export default function Upload() {
       setAudioInputKey((prev) => prev + 1);
       setCoverInputKey((prev) => prev + 1);
       setVideoInputKey((prev) => prev + 1);
+      setGeneratedCoverPreview(null);
     } catch (error: any) {
       toast.error("Nepodařilo se nahrát skladbu");
       if (import.meta.env.DEV) {
