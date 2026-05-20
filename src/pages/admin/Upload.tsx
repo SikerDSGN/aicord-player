@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Upload as UploadIcon, Music, Video, Info } from "lucide-react";
+import { Upload as UploadIcon, Music, Video, Info, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 // File validation constants
