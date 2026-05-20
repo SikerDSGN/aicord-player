@@ -449,14 +449,34 @@ export default function Upload() {
                     id="cover"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      setCoverFile(e.target.files?.[0] || null);
+                      setGeneratedCoverPreview(null);
+                    }}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateCover}
+                    disabled={generatingCover}
+                    className="w-full"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {generatingCover ? "Generování..." : "Vygenerovat obrázek pomocí AI"}
+                  </Button>
                   {coverFile && (
-                    <p className="text-sm text-muted-foreground">
-                      {coverFile.name}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{coverFile.name}</p>
+                  )}
+                  {generatedCoverPreview && (
+                    <img
+                      src={generatedCoverPreview}
+                      alt="Vygenerovaný cover"
+                      className="mt-2 h-32 w-32 rounded-md object-cover border border-border"
+                    />
                   )}
                 </div>
+
               </>
             )}
 
