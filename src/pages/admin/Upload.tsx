@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Upload as UploadIcon, Music, Video, Info } from "lucide-react";
+import { Upload as UploadIcon, Music, Video, Info, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 // File validation constants
@@ -41,6 +41,48 @@ export default function Upload() {
   const [audioInputKey, setAudioInputKey] = useState(0);
   const [coverInputKey, setCoverInputKey] = useState(0);
   const [videoInputKey, setVideoInputKey] = useState(0);
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [generatedCoverPreview, setGeneratedCoverPreview] = useState<string | null>(null);
+
+  const handleGenerateCover = async () => {
+    if (!title.trim() && !artist.trim() && !description.trim()) {
+      toast.error("Vyplňte název, interpreta nebo popis pro generování obrázku");
+      return;
+    }
+    setGeneratingCover(true);
+    try {
+      const prompt = [
+        title && `Song titled "${title}"`,
+        artist && `by ${artist}`,
+        description && `Description: ${description}`,
+        tags && `Style/tags: ${tags}`,
+      ]
+        .filter(Boolean)
+        .join(". ");
+
+      const { data, error } = await supabase.functions.invoke("generate-cover", {
+        body: { prompt },
+      });
+      if (error) throw error;
+      if (!data?.imageUrl) throw new Error("No image returned");
+
+      // Convert data URL to File
+      const res = await fetch(data.imageUrl);
+      const blob = await res.blob();
+      const ext = blob.type.split("/")[1] || "png";
+      const file = new File([blob], `generated-cover-${Date.now()}.${ext}`, { type: blob.type });
+      setCoverFile(file);
+      setGeneratedCoverPreview(data.imageUrl);
+      setCoverInputKey((prev) => prev + 1);
+      toast.success("Obrázek byl vygenerován");
+    } catch (err: any) {
+      const msg = err?.message || "Nepodařilo se vygenerovat obrázek";
+      toast.error(msg);
+      if (import.meta.env.DEV) console.error("Generate cover error:", err);
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
 
   const sanitizeFileName = (fileName: string) => {
     return fileName
@@ -203,6 +245,7 @@ export default function Upload() {
       setAudioInputKey((prev) => prev + 1);
       setCoverInputKey((prev) => prev + 1);
       setVideoInputKey((prev) => prev + 1);
+      setGeneratedCoverPreview(null);
     } catch (error: any) {
       toast.error("Nepodařilo se nahrát skladbu");
       if (import.meta.env.DEV) {
@@ -345,14 +388,34 @@ export default function Upload() {
                     id="cover"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      setCoverFile(e.target.files?.[0] || null);
+                      setGeneratedCoverPreview(null);
+                    }}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateCover}
+                    disabled={generatingCover}
+                    className="w-full"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {generatingCover ? "Generování..." : "Vygenerovat obrázek pomocí AI"}
+                  </Button>
                   {coverFile && (
-                    <p className="text-sm text-muted-foreground">
-                      {coverFile.name}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{coverFile.name}</p>
+                  )}
+                  {generatedCoverPreview && (
+                    <img
+                      src={generatedCoverPreview}
+                      alt="Vygenerovaný cover"
+                      className="mt-2 h-32 w-32 rounded-md object-cover border border-border"
+                    />
                   )}
                 </div>
+
               </>
             ) : (
               <>
@@ -387,14 +450,34 @@ export default function Upload() {
                     id="cover"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      setCoverFile(e.target.files?.[0] || null);
+                      setGeneratedCoverPreview(null);
+                    }}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateCover}
+                    disabled={generatingCover}
+                    className="w-full"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {generatingCover ? "Generování..." : "Vygenerovat obrázek pomocí AI"}
+                  </Button>
                   {coverFile && (
-                    <p className="text-sm text-muted-foreground">
-                      {coverFile.name}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{coverFile.name}</p>
+                  )}
+                  {generatedCoverPreview && (
+                    <img
+                      src={generatedCoverPreview}
+                      alt="Vygenerovaný cover"
+                      className="mt-2 h-32 w-32 rounded-md object-cover border border-border"
+                    />
                   )}
                 </div>
+
               </>
             )}
 

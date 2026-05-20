@@ -38,7 +38,7 @@ export function FullscreenVideo({ isOpen, onClose }: FullscreenVideoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hideControlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync video with audio on open (avoid aggressive re-seeking)
   useEffect(() => {
