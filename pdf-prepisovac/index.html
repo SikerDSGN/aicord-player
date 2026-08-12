@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>PDF Přepisovač</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f6f3ed;--card:#fff;--ink:#17202a;--muted:#68727d;--accent:#0b7895;--line:#d9dee2;--danger:#b42318}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}header{position:sticky;top:0;z-index:20;background:#155873;color:#fff;padding:14px 16px;box-shadow:0 2px 10px #0002}header b{font-size:18px}.sub{font-size:12px;opacity:.8}.app{max-width:900px;margin:auto;padding:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px #0000000d}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,.btn,select,input,textarea{font:inherit}.btn,button{border:0;border-radius:12px;padding:11px 14px;background:#e8edf0;color:var(--ink);font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.danger{background:#fee4e2;color:var(--danger)}.ghost{background:transparent;border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}input[type=file]{display:none}.status{margin-top:10px;padding:10px 12px;background:#edf7fa;border-radius:12px;color:#135268;font-size:13px}.status.err{background:#fff0ee;color:#9f1d14}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.canvasWrap{position:relative;width:100%;background:#bbb;border-radius:14px;overflow:hidden;touch-action:pan-x pan-y}.canvasWrap canvas{display:block;width:100%;height:auto}.overlay{position:absolute;inset:0}.box{position:absolute;border:1.5px solid #00a3c7;background:#00a3c71f;border-radius:3px;min-width:4px;min-height:4px}.box:active{background:#00a3c744}.pager{display:flex;justify-content:space-between;align-items:center;margin:10px 0}.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.sheet{position:fixed;inset:0;z-index:100;background:#0008;display:flex;align-items:flex-end;justify-content:center}.sheetCard{background:#fff;width:min(900px,100%);max-height:88vh;overflow:auto;border-radius:22px 22px 0 0;padding:16px}.sheetHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:10px 0}.field label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.field textarea{min-height:76px;resize:vertical}.rangeVal{font-size:12px;color:var(--muted)}.tag{font-size:11px;padding:4px 8px;border-radius:999px;background:#e5f3f7;color:#155873;font-weight:800}.footerNote{font-size:11px;color:var(--muted);margin-top:12px}.spinner{display:inline-block;width:14px;height:14px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.app{padding:10px}.card{padding:10px;border-radius:14px}.grid{grid-template-columns:1fr}.toolbar button,.toolbar .btn{flex:1 1 auto}.sheetCard{padding-bottom:26px}}
+</style>
+</head>
+<body>
+<header><b>PDF Přepisovač</b><div class="sub">standalone verze bez Lovable kreditů</div></header>
+<div class="app">
+  <div class="card" id="startCard">
+    <div class="row">
+      <label class="btn primary" for="fileInput">📄 Nahrát PDF / fotku</label>
+      <input id="fileInput" type="file" accept="application/pdf,image/*" />
+      <span class="tag">OCR CZ + DE + EN</span>
+    </div>
+    <div class="footerNote">Dokument se zpracovává přímo v prohlížeči. AI není potřeba.</div>
+  </div>
+
+  <div id="editor" class="hidden">
+    <div class="pager">
+      <button id="prevPage" class="ghost">←</button>
+      <b id="pageLabel">Strana 1 / 1</b>
+      <button id="nextPage" class="ghost">→</button>
+    </div>
+    <div class="toolbar">
+      <button id="ocrBtn" class="primary">🔎 Rozpoznat text OCR</button>
+      <button id="beforeBtn">👁 Před / Po</button>
+      <button id="undoBtn">↶ Zpět</button>
+      <button id="redoBtn">↷ Znovu</button>
+      <button id="exportBtn">⬇ Uložit PDF</button>
+      <label class="btn ghost" for="fileInput">Nový dokument</label>
+    </div>
+    <div id="status" class="status">Nahraj dokument a spusť OCR.</div>
+    <div class="canvasWrap" id="canvasWrap"><canvas id="view"></canvas><div class="overlay" id="overlay"></div></div>
+    <div class="muted" style="margin-top:8px">Po OCR klepni na modře označené slovo. Pak ho můžeš přepsat, vygumovat nebo doladit písmo.</div>
+  </div>
+</div>
+
+<div id="sheet" class="sheet hidden">
+  <div class="sheetCard">
+    <div class="sheetHead"><div><b>Upravit text</b><div id="origText" class="muted"></div></div><button id="closeSheet" class="ghost">✕</button></div>
+    <div class="field"><label>Nový text</label><textarea id="newText"></textarea></div>
+    <div class="grid">
+      <div class="field"><label>Písmo</label><select id="fontFamily"><option value="Arial,Helvetica,sans-serif">Arial / Helvetica</option><option value="system-ui,Segoe UI,Roboto,sans-serif">Systémové</option><option value="Verdana,Tahoma,sans-serif">Verdana / Tahoma</option><option value="'Times New Roman',Times,serif">Times New Roman</option><option value="Georgia,serif">Georgia</option><option value="'Courier New',Courier,monospace">Courier</option></select></div>
+      <div class="field"><label>Tloušťka</label><select id="fontWeight"><option>300</option><option selected>400</option><option>500</option><option>600</option><option>700</option></select></div>
+      <div class="field"><label>Styl</label><select id="italic"><option value="0">Normální</option><option value="1">Kurzíva</option></select></div>
+      <div class="field"><label>Zarovnání</label><select id="align"><option value="left">Vlevo</option><option value="center">Na střed</option><option value="right">Vpravo</option></select></div>
+      <div class="field"><label>Velikost písma <span id="fontSizeVal" class="rangeVal"></span></label><input id="fontSize" type="range" min="6" max="120" step="1"></div>
+      <div class="field"><label>Šířka textu <span id="widthVal" class="rangeVal"></span></label><input id="widthScale" type="range" min="80" max="120" step="1" value="100"></div>
+      <div class="field"><label>Rozteč písmen <span id="spacingVal" class="rangeVal"></span></label><input id="letterSpacing" type="range" min="-4" max="12" step="0.1" value="0"></div>
+      <div class="field"><label>Posun X <span id="dxVal" class="rangeVal"></span></label><input id="dx" type="range" min="-100" max="100" step="1" value="0"></div>
+      <div class="field"><label>Posun Y <span id="dyVal" class="rangeVal"></span></label><input id="dy" type="range" min="-100" max="100" step="1" value="0"></div>
+      <div class="field"><label>Barva textu</label><input id="color" type="color" value="#111111"></div>
+      <div class="field"><label>Barva podkladu</label><input id="bgColor" type="color" value="#ffffff"></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="applyEdit" class="primary">Použít</button><button id="eraseEdit" class="danger">Vygumovat</button><button id="cancelEdit" class="ghost">Zrušit</button></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const S={pages:[],page:0,after:true,selected:null,worker:null};
+const view=$('#view'),vctx=view.getContext('2d'),overlay=$('#overlay'),status=$('#status');
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function setStatus(t,err=false){status.textContent=t;status.className='status'+(err?' err':'')}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rgbHex(r,g,b){return '#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('')}
+function page(){return S.pages[S.page]}
+function snapshot(p){return JSON.stringify(p.edits)}
+function pushHistory(p){p.undo.push(snapshot(p));if(p.undo.length>30)p.undo.shift();p.redo=[]}
+function makeCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+async function imageToCanvas(file){const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});const c=makeCanvas(img.naturalWidth,img.naturalHeight);c.getContext('2d').drawImage(img,0,0);return c}finally{URL.revokeObjectURL(url)}}
+async function pdfToCanvases(file){const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;const arr=[];for(let i=1;i<=pdf.numPages;i++){setStatus(`Načítám PDF: strana ${i}/${pdf.numPages}…`);const pg=await pdf.getPage(i);const vp=pg.getViewport({scale:2});const c=makeCanvas(Math.ceil(vp.width),Math.ceil(vp.height));await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;arr.push(c)}return arr}
+async function loadFile(file){if(!file)return;try{setStatus('Načítám dokument…');let canvases;if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf'))canvases=await pdfToCanvases(file);else canvases=[await imageToCanvas(file)];S.pages=canvases.map(c=>({base:c,words:[],ocrDone:false,edits:[],undo:[],redo:[]}));S.page=0;S.after=true;$('#editor').classList.remove('hidden');render();setStatus(`Dokument připraven. ${S.pages.length>1?S.pages.length+' stran. ':''}Spusť OCR.`)}catch(e){console.error(e);setStatus('Načtení selhalo: '+(e?.message||e),true)}}
+function render(){const p=page();if(!p)return;view.width=p.base.width;view.height=p.base.height;vctx.clearRect(0,0,view.width,view.height);vctx.drawImage(p.base,0,0);if(S.after)p.edits.forEach(e=>drawEdit(vctx,e));renderBoxes();$('#pageLabel').textContent=`Strana ${S.page+1} / ${S.pages.length}`;$('#prevPage').disabled=S.page===0;$('#nextPage').disabled=S.page===S.pages.length-1;$('#undoBtn').disabled=!p.undo.length;$('#redoBtn').disabled=!p.redo.length;$('#ocrBtn').textContent=p.ocrDone?'🔁 OCR znovu':'🔎 Rozpoznat text OCR'}
+function renderBoxes(){const p=page();overlay.innerHTML='';if(!p||!p.ocrDone)return;p.words.forEach(w=>{const d=document.createElement('div');d.className='box';d.title=w.text;d.style.left=(w.box.x/p.base.width*100)+'%';d.style.top=(w.box.y/p.base.height*100)+'%';d.style.width=(w.box.w/p.base.width*100)+'%';d.style.height=(w.box.h/p.base.height*100)+'%';d.onclick=()=>openEditor(w);overlay.appendChild(d)})}
+function parseWords(data){const out=[];if(Array.isArray(data.words)&&data.words.length){for(const w of data.words){if(!w.text?.trim()||!w.bbox)continue;out.push({id:crypto.randomUUID(),text:w.text.trim(),box:{x:w.bbox.x0,y:w.bbox.y0,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}})}return out}for(const b of data.blocks||[])for(const par of b.paragraphs||[])for(const ln of par.lines||[])for(const w of ln.words||[]){if(!w.text?.trim()||!w.bbox)continue;out.push({id:crypto.randomUUID(),text:w.text.trim(),box:{x:w.bbox.x0,y:w.bbox.y0,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}})}return out}
+async function runOCR(){const p=page();if(!p)return;$('#ocrBtn').disabled=true;try{setStatus('Spouštím OCR…');const worker=await Tesseract.createWorker(['ces','deu','eng'],1,{logger:m=>{if(m.status){const q=Math.round((m.progress||0)*100);setStatus(`${m.status} ${q}%`)}}});S.worker=worker;const result=await worker.recognize(p.base,{}, {blocks:true,text:true});p.words=parseWords(result.data);p.ocrDone=true;setStatus(`OCR hotovo: nalezeno ${p.words.length} slov. Klepni na modrý rámeček.`);render()}catch(e){console.error(e);setStatus('OCR selhalo: '+(e?.message||e),true)}finally{try{if(S.worker)await S.worker.terminate()}catch{}S.worker=null;$('#ocrBtn').disabled=false}}
+function avgSample(p,box,mode){const ctx=p.base.getContext('2d');const pad=Math.max(3,Math.round(box.h*.25));const x=clamp(Math.floor(box.x-pad),0,p.base.width-1),y=clamp(Math.floor(box.y-pad),0,p.base.height-1),w=clamp(Math.ceil(box.w+pad*2),1,p.base.width-x),h=clamp(Math.ceil(box.h+pad*2),1,p.base.height-y);const d=ctx.getImageData(x,y,w,h).data;let r=0,g=0,b=0,n=0;for(let yy=0;yy<h;yy+=2)for(let xx=0;xx<w;xx+=2){const i=(yy*w+xx)*4;const inside=xx>=pad&&xx<pad+box.w&&yy>=pad&&yy<pad+box.h;const lum=(d[i]+d[i+1]+d[i+2])/3;if(mode==='bg'&&inside)continue;if(mode==='fg'&&(!inside||lum>180))continue;r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n?rgbHex(r/n,g/n,b/n):(mode==='bg'?'#ffffff':'#111111')}
+function openEditor(w){const p=page(),old=p.edits.find(e=>e.wordId===w.id);S.selected=w;$('#origText').textContent='Původně: '+w.text;$('#newText').value=old?.newText??w.text;$('#fontFamily').value=old?.fontFamily??'Arial,Helvetica,sans-serif';$('#fontWeight').value=String(old?.fontWeight??400);$('#italic').value=old?.italic?'1':'0';$('#align').value=old?.align??'left';$('#fontSize').value=String(Math.round(old?.fontSize??Math.max(8,w.box.h*.9)));$('#widthScale').value=String(Math.round((old?.widthScale??1)*100));$('#letterSpacing').value=String(old?.letterSpacing??0);$('#dx').value=String(old?.dx??0);$('#dy').value=String(old?.dy??0);$('#color').value=old?.color??avgSample(p,w.box,'fg');$('#bgColor').value=old?.bgColor??avgSample(p,w.box,'bg');updateVals();$('#sheet').classList.remove('hidden')}
+function updateVals(){$('#fontSizeVal').textContent=$('#fontSize').value+' px';$('#widthVal').textContent=$('#widthScale').value+' %';$('#spacingVal').textContent=$('#letterSpacing').value+' px';$('#dxVal').textContent=$('#dx').value+' px';$('#dyVal').textContent=$('#dy').value+' px'}
+['fontSize','widthScale','letterSpacing','dx','dy'].forEach(id=>$('#'+id).addEventListener('input',updateVals));
+function closeSheet(){$('#sheet').classList.add('hidden');S.selected=null}
+function saveEdit(forceErase=false){const p=page(),w=S.selected;if(!p||!w)return;pushHistory(p);const e={wordId:w.id,box:{...w.box},originalText:w.text,newText:forceErase?'':$('#newText').value,fontFamily:$('#fontFamily').value,fontWeight:+$('#fontWeight').value,italic:$('#italic').value==='1',align:$('#align').value,fontSize:+$('#fontSize').value,widthScale:+$('#widthScale').value/100,letterSpacing:+$('#letterSpacing').value,dx:+$('#dx').value,dy:+$('#dy').value,color:$('#color').value,bgColor:$('#bgColor').value};const i=p.edits.findIndex(x=>x.wordId===w.id);if(i>=0)p.edits[i]=e;else p.edits.push(e);closeSheet();render();setStatus(`Úprava uložena. Celkem úprav na stránce: ${p.edits.length}.`)}
+function measureSpaced(ctx,e){const chars=[...e.newText];let w=0;for(const ch of chars)w+=ctx.measureText(ch).width;if(chars.length>1)w+=e.letterSpacing*(chars.length-1);return w*e.widthScale}
+function drawEdit(ctx,e){const pad=Math.max(2,Math.round(e.box.h*.18));ctx.save();ctx.fillStyle=e.bgColor;ctx.fillRect(e.box.x-pad,e.box.y-pad,e.box.w+pad*2,e.box.h+pad*2);if(e.newText.trim()){ctx.fillStyle=e.color;ctx.font=`${e.italic?'italic ':''}${e.fontWeight} ${e.fontSize}px ${e.fontFamily}`;ctx.textBaseline='alphabetic';ctx.textAlign='left';const tw=measureSpaced(ctx,e),baseline=e.box.y+e.box.h*.82+e.dy;let x=e.box.x+e.dx;if(e.align==='center')x+=(e.box.w-tw)/2;if(e.align==='right')x+=e.box.w-tw;ctx.translate(x,baseline);ctx.scale(e.widthScale,1);let cx=0;for(const ch of [...e.newText]){ctx.fillText(ch,cx,0);cx+=ctx.measureText(ch).width+e.letterSpacing}}ctx.restore()}
+function renderedCanvas(p){const c=makeCanvas(p.base.width,p.base.height),ctx=c.getContext('2d');ctx.drawImage(p.base,0,0);p.edits.forEach(e=>drawEdit(ctx,e));return c}
+async function exportPdf(){if(!S.pages.length)return;try{setStatus('Vytvářím PDF…');const {jsPDF}=window.jspdf;let doc=null;S.pages.forEach((p,i)=>{const c=renderedCanvas(p),w=c.width,h=c.height,ori=w>h?'landscape':'portrait';if(!doc)doc=new jsPDF({orientation:ori,unit:'px',format:[w,h],hotfixes:['px_scaling'],compress:true});else doc.addPage([w,h],ori);const q=Math.max(w,h)>2600?.82:.92;doc.addImage(c.toDataURL('image/jpeg',q),'JPEG',0,0,w,h,undefined,'FAST')});doc.save('upraveny-dokument.pdf');setStatus('PDF vytvořeno a staženo.')}catch(e){console.error(e);setStatus('Export selhal: '+(e?.message||e),true)}}
+$('#fileInput').addEventListener('change',e=>loadFile(e.target.files?.[0]));$('#ocrBtn').onclick=runOCR;$('#prevPage').onclick=()=>{if(S.page>0){S.page--;render()}};$('#nextPage').onclick=()=>{if(S.page<S.pages.length-1){S.page++;render()}};$('#beforeBtn').onclick=()=>{S.after=!S.after;render();setStatus(S.after?'Zobrazení PO úpravách.':'Zobrazení PŘED úpravami.')};$('#undoBtn').onclick=()=>{const p=page();if(!p.undo.length)return;p.redo.push(snapshot(p));p.edits=JSON.parse(p.undo.pop());render()};$('#redoBtn').onclick=()=>{const p=page();if(!p.redo.length)return;p.undo.push(snapshot(p));p.edits=JSON.parse(p.redo.pop());render()};$('#exportBtn').onclick=exportPdf;$('#closeSheet').onclick=$('#cancelEdit').onclick=closeSheet;$('#applyEdit').onclick=()=>saveEdit(false);$('#eraseEdit').onclick=()=>saveEdit(true);
+})();
+</script>
+</body>
+</html>
