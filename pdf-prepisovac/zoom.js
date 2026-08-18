@@ -22,7 +22,7 @@ function initZoom(){
       .canvasWrap{max-height:68vh}
       .sheet{background:#0003!important;align-items:flex-end!important;pointer-events:none}
       .sheetCard{max-height:52vh!important;pointer-events:auto;box-shadow:0 -8px 30px #0003}
-      .zoomBar{top:55px;grid-template-columns:auto minmax(70px,1fr) auto auto;padding:6px}
+      .zoomBar{position:static!important;top:auto!important;z-index:4!important;grid-template-columns:auto minmax(70px,1fr) auto auto;padding:6px;margin:5px 0 7px!important}
       .zoomBar button{padding:8px 10px}
     }
   `;
@@ -50,7 +50,6 @@ function initZoom(){
   let zoom=1;
 
   function setZoom(next,keepCenter=true){
-    const old=zoom;
     zoom=Math.max(.5,Math.min(4,next));
     const oldW=wrap.scrollWidth||1,oldH=wrap.scrollHeight||1;
     const centerX=wrap.scrollLeft+wrap.clientWidth/2;
@@ -60,7 +59,7 @@ function initZoom(){
     stage.style.width=(zoom*100)+'%';
     if(keepCenter){
       requestAnimationFrame(()=>{
-        const rx=oldW?centerX/oldW:.5, ry=oldH?centerY/oldH:.5;
+        const rx=oldW?centerX/oldW:.5,ry=oldH?centerY/oldH:.5;
         wrap.scrollLeft=Math.max(0,wrap.scrollWidth*rx-wrap.clientWidth/2);
         wrap.scrollTop=Math.max(0,wrap.scrollHeight*ry-wrap.clientHeight/2);
       });
