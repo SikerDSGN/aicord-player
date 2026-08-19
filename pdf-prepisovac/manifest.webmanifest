@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "PDF Přepisovač",
+  "short_name": "PDF Přepis",
+  "description": "Mobilní OCR editor skenovaných dokumentů a vícestránkových PDF.",
+  "lang": "cs",
+  "start_url": "./app.html?pwa=1",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f6f3ed",
+  "theme_color": "#155873",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
