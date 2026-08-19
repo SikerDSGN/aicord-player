@@ -2,38 +2,25 @@
 (()=>{
   const clone=v=>{try{return typeof structuredClone==='function'?structuredClone(v):JSON.parse(JSON.stringify(v))}catch{return JSON.parse(JSON.stringify(v))}};
   const canvasBlob=(c,type='image/jpeg',quality=.93)=>new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('Canvas export failed')),type,quality));
-  const makeThumb=async()=>{
-    if(!S.pages.length)return null;
-    const src=S.pages[0].base,maxW=320,scale=Math.min(1,maxW/src.width),w=Math.max(1,Math.round(src.width*scale)),h=Math.max(1,Math.round(src.height*scale));
-    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(src,0,0,w,h);return canvasBlob(c,'image/jpeg',.72);
-  };
+  const emptyPage=base=>({base,words:[],ocrDone:false,edits:[],undo:[],redo:[]});
+  const makeThumbFrom=async(src,maxW=320)=>{const scale=Math.min(1,maxW/src.width),w=Math.max(1,Math.round(src.width*scale)),h=Math.max(1,Math.round(src.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(src,0,0,w,h);return canvasBlob(c,'image/jpeg',.72)};
+  const makeThumb=async()=>S.pages.length?makeThumbFrom(S.pages[0].base):null;
+  const notify=(text,full=true)=>{if(S.pages.length){S.page=Math.max(0,Math.min(S.page,S.pages.length-1));$('#editor').classList.remove('hidden');render()}setStatus(text);window.dispatchEvent(new CustomEvent('pdfp:document-mutated',{detail:{full}}))};
   window.PDFPBridge={
-    version:1,
+    version:2,
     hasDocument:()=>S.pages.length>0,
     summary:()=>({pages:S.pages.length,page:S.page,after:S.after,ocrPages:S.pages.filter(p=>p.ocrDone).length,edits:S.pages.reduce((n,p)=>n+(p.edits?.length||0),0)}),
-    async exportState(opts={}){
-      const withImages=opts.withImages!==false;
-      const pages=[];
-      for(const p of S.pages){
-        pages.push({
-          baseBlob:withImages?await canvasBlob(p.base):undefined,
-          words:clone(p.words||[]),ocrDone:!!p.ocrDone,edits:clone(p.edits||[]),undo:clone(p.undo||[]),redo:clone(p.redo||[])
-        });
-      }
-      return {version:1,page:S.page,after:S.after,pages,thumbBlob:opts.withThumbnail?await makeThumb():undefined};
-    },
-    async importState(state){
-      if(!state?.pages?.length)throw new Error('Projekt neobsahuje stránky.');
-      const pages=[];
-      for(const p of state.pages){
-        if(!p.baseBlob)throw new Error('Projekt nemá uložený obraz stránky.');
-        const base=await imageToCanvas(p.baseBlob);
-        pages.push({base,words:clone(p.words||[]),ocrDone:!!p.ocrDone,edits:clone(p.edits||[]),undo:clone(p.undo||[]),redo:clone(p.redo||[])});
-      }
-      S.pages=pages;S.page=Math.max(0,Math.min(pages.length-1,Number(state.page)||0));S.after=state.after!==false;
-      $('#editor').classList.remove('hidden');render();setStatus(`Projekt obnoven. ${pages.length} ${pages.length===1?'stránka':'stránek'}, ${pages.reduce((n,p)=>n+p.edits.length,0)} úprav.`);
-      window.dispatchEvent(new CustomEvent('pdfp:project-restored'));
-    },
+    pageMeta:()=>S.pages.map((p,i)=>({index:i,width:p.base.width,height:p.base.height,ocrDone:!!p.ocrDone,edits:p.edits?.length||0,words:p.words?.length||0,current:i===S.page})),
+    setPage(i){if(!S.pages.length)return;S.page=Math.max(0,Math.min(S.pages.length-1,Number(i)||0));render()},
+    async pageBlob(i=S.page){const p=S.pages[i];if(!p)throw new Error('Stránka neexistuje.');return canvasBlob(p.base)},
+    async pageThumbs(){const out=[];for(const p of S.pages)out.push(await makeThumbFrom(p.base,180));return out},
+    async addPageBlobs(blobs,at){if(!Array.isArray(blobs)||!blobs.length)return;const pages=[];for(const b of blobs)pages.push(emptyPage(await imageToCanvas(b)));let pos=Number.isFinite(at)?Math.max(0,Math.min(S.pages.length,at)):S.page+1;S.pages.splice(pos,0,...pages);S.page=pos;notify(`Přidáno ${pages.length} ${pages.length===1?'stránka':'stránek'}.`,true)},
+    deletePage(i){i=Number(i);if(S.pages.length<=1)throw new Error('Poslední stránku nelze smazat. Pro nový dokument použij menu.');if(i<0||i>=S.pages.length)return;S.pages.splice(i,1);if(S.page>=S.pages.length)S.page=S.pages.length-1;notify(`Stránka ${i+1} smazána.`,true)},
+    movePage(from,to){from=Number(from);to=Number(to);if(from<0||from>=S.pages.length)return;to=Math.max(0,Math.min(S.pages.length-1,to));if(from===to)return;const [p]=S.pages.splice(from,1);S.pages.splice(to,0,p);if(S.page===from)S.page=to;else if(from<S.page&&to>=S.page)S.page--;else if(from>S.page&&to<=S.page)S.page++;notify('Pořadí stránek změněno.',true)},
+    rotatePage(i,deg=90){i=Number(i);const p=S.pages[i];if(!p)return;deg=((Number(deg)%360)+360)%360;if(!deg)return;const src=p.base,c=document.createElement('canvas');if(deg===90||deg===270){c.width=src.height;c.height=src.width}else{c.width=src.width;c.height=src.height}const x=c.getContext('2d');x.save();if(deg===90){x.translate(c.width,0);x.rotate(Math.PI/2)}else if(deg===180){x.translate(c.width,c.height);x.rotate(Math.PI)}else if(deg===270){x.translate(0,c.height);x.rotate(-Math.PI/2)}x.drawImage(src,0,0);x.restore();S.pages[i]=emptyPage(c);S.page=i;notify('Stránka otočena. OCR a textové úpravy této stránky byly resetovány.',true)},
+    async replacePageBlob(i,blob,opts={}){i=Number(i);const p=S.pages[i];if(!p)throw new Error('Stránka neexistuje.');const base=await imageToCanvas(blob),reset=opts.resetGeometry!==false;S.pages[i]=reset?emptyPage(base):{...p,base};S.page=i;notify(opts.message||'Stránka upravena.',true)},
+    async exportState(opts={}){const withImages=opts.withImages!==false,pages=[];for(const p of S.pages)pages.push({baseBlob:withImages?await canvasBlob(p.base):undefined,words:clone(p.words||[]),ocrDone:!!p.ocrDone,edits:clone(p.edits||[]),undo:clone(p.undo||[]),redo:clone(p.redo||[])});return {version:2,page:S.page,after:S.after,pages,thumbBlob:opts.withThumbnail?await makeThumb():undefined}},
+    async importState(state){if(!state?.pages?.length)throw new Error('Projekt neobsahuje stránky.');const pages=[];for(const p of state.pages){if(!p.baseBlob)throw new Error('Projekt nemá uložený obraz stránky.');const base=await imageToCanvas(p.baseBlob);pages.push({base,words:clone(p.words||[]),ocrDone:!!p.ocrDone,edits:clone(p.edits||[]),undo:clone(p.undo||[]),redo:clone(p.redo||[])})}S.pages=pages;S.page=Math.max(0,Math.min(pages.length-1,Number(state.page)||0));S.after=state.after!==false;$('#editor').classList.remove('hidden');render();setStatus(`Projekt obnoven. ${pages.length} ${pages.length===1?'stránka':'stránek'}, ${pages.reduce((n,p)=>n+p.edits.length,0)} úprav.`);window.dispatchEvent(new CustomEvent('pdfp:project-restored'))},
     async thumbnail(){return makeThumb()}
   };
 })();
