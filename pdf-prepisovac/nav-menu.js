@@ -1,0 +1,24 @@
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);let drawer;
+function closeLayers(){for(const id of['pageToolsClose','projClose','libClose','scanClose','closeSheet']){const b=$('#'+id);if(b&&b.offsetParent!==null)try{b.click()}catch{}}}
+function hasDoc(){return !!window.PDFPBridge?.hasDocument?.()}
+function goHome(){closeLayers();$('#editor')?.classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});close()}
+function goDoc(){closeLayers();if(!hasDoc())return $('#fileInput')?.click();$('#editor')?.classList.remove('hidden');close();setTimeout(()=>$('#editor')?.scrollIntoView({block:'start',behavior:'smooth'}),50)}
+function goNew(){closeLayers();close();$('#fileInput')?.click()}
+function goProjects(){closeLayers();close();setTimeout(()=>$('#projectsBtn')?.click(),30)}
+function goLibrary(){closeLayers();close();setTimeout(()=>$('#libraryBtn')?.click(),30)}
+function goScans(){closeLayers();close();setTimeout(()=>{const b=[...document.querySelectorAll('#startCard .scanLaunch')].find(x=>x.textContent.includes('Skeny'));b?.click()},30)}
+function goPages(){closeLayers();close();setTimeout(()=>window.PDFPPageTools?.open(),30)}
+function goInstall(){close();$('#installPwaBtn')?.click()}
+function addStyle(){if($('#navMenuStyle'))return;const s=document.createElement('style');s.id='navMenuStyle';s.textContent=`
+#appMenuBtn{position:fixed;left:8px;top:calc(8px + env(safe-area-inset-top));z-index:390;width:43px;height:43px;min-height:43px;padding:0;border-radius:13px;background:#ffffffed;color:#155873;box-shadow:0 5px 18px #0004;border:1px solid #ffffffaa;font-size:22px;display:flex;align-items:center;justify-content:center}.appDrawerShade{position:fixed;inset:0;z-index:400;background:#0007}.appDrawerShade.hidden{display:none!important}.appDrawer{position:absolute;left:0;top:0;bottom:0;width:min(330px,88vw);background:#f7f9fa;padding:calc(14px + env(safe-area-inset-top)) 11px calc(14px + env(safe-area-inset-bottom));box-shadow:12px 0 35px #0005;overflow:auto}.appDrawerHead{display:flex;justify-content:space-between;align-items:center;padding:5px 4px 13px}.appDrawerHead b{font-size:18px;color:#155873}.appDrawerHead button{min-height:40px}.appDrawerMenu{display:grid;gap:7px}.appDrawerMenu button{display:flex;align-items:center;gap:10px;justify-content:flex-start;min-height:50px;background:#fff;border:1px solid var(--line);text-align:left;font-size:13px}.appDrawerMenu button.primary{background:#155873;color:#fff}.appDrawerMenu .sep{height:1px;background:var(--line);margin:4px 2px}.appDrawerNote{font-size:10px;color:var(--muted);padding:10px 5px;line-height:1.35}body header{padding-left:60px!important}
+@media(min-width:700px){#appMenuBtn{left:16px}.appDrawer{width:340px}}
+`;document.head.appendChild(s)}
+function build(){if(drawer)return;addStyle();const b=document.createElement('button');b.id='appMenuBtn';b.type='button';b.setAttribute('aria-label','Menu');b.textContent='☰';b.onclick=open;document.body.appendChild(b);drawer=document.createElement('div');drawer.id='appDrawerShade';drawer.className='appDrawerShade hidden';drawer.innerHTML=`<div class="appDrawer"><div class="appDrawerHead"><b>PDF Přepisovač</b><button id="appDrawerClose" class="ghost">✕</button></div><div class="appDrawerMenu"><button id="navHome" class="primary">🏠 Domů</button><button id="navCurrent">📄 Aktuální dokument</button><button id="navNew">＋ Nový dokument</button><div class="sep"></div><button id="navProjects">📂 Rozpracované projekty</button><button id="navLibrary">💾 Moje dokumenty</button><button id="navPages">🗂 Správa stránek</button><button id="navScans">📚 Skeny → PDF</button><div class="sep"></div><button id="navInstall">📲 Nainstalovat aplikaci</button></div><div class="appDrawerNote">Domů aktuální práci nemaže. Projekt se dál ukládá automaticky. „Nový dokument“ otevře výběr nového souboru.</div></div>`;document.body.appendChild(drawer);$('#appDrawerClose').onclick=close;drawer.onclick=e=>{if(e.target===drawer)close()};$('#navHome').onclick=goHome;$('#navCurrent').onclick=goDoc;$('#navNew').onclick=goNew;$('#navProjects').onclick=goProjects;$('#navLibrary').onclick=goLibrary;$('#navPages').onclick=goPages;$('#navScans').onclick=goScans;$('#navInstall').onclick=goInstall}
+function refresh(){if(!drawer)return;$('#navCurrent').disabled=!hasDoc();$('#navPages').disabled=!hasDoc();const inst=$('#installPwaBtn');$('#navInstall').style.display=inst?'flex':'none'}
+function open(){build();refresh();drawer.classList.remove('hidden');document.body.style.overflow='hidden'}
+function close(){drawer?.classList.add('hidden');document.body.style.overflow=''}
+function init(){build();refresh();window.addEventListener('pdfp:project-restored',refresh);window.addEventListener('pdfp:document-mutated',refresh);$('#fileInput')?.addEventListener('change',()=>setTimeout(refresh,500))}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+})();
